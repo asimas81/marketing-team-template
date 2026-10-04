@@ -16,3 +16,14 @@ O [RBAC de Agency e Client](../../marketing-management-os/TENANT_RBAC_MATRIX.md)
 | Channel Connector | Conta e payload autorizados | Resultado externo | Não | Apenas ação exata aprovada, idempotente e auditada |
 
 Conexões legadas do template têm gates Eve próprios; esses gates permanecem, mas não substituem aprovação de negócio persistida no OS. Ferramentas de leitura/escrita devem declarar owner, side effect, credencial, ambiente e fallback no [Tools Catalog](../TOOLS_CATALOG.md).
+
+## Ampliação futura: Engagement
+
+| Capacidade | DRAFT/PREPARE | SCHEDULE | SEND/PUBLISH | CRM handoff |
+| --- | --- | --- | --- | --- |
+| Email atual via Resend | Draft conforme grants legados | Gate Eve conforme tool | Gate Eve existente; OS approval será obrigatório no fluxo futuro | Não |
+| Agentic Email no OS (futuro) | Sim, em Client autorizado | Intenção interna; agendamento externo segue gate SEND | Somente executor com approval, consent/suppression e idempotência | Não por padrão |
+| Lead Qualification Agent (futuro) | Assessment/proposta do Lead mínimo | Não | Não | Proposta; executor autorizado separado |
+| WhatsApp/SMS/DM/Messenger/Web Chat (futuro) | Só após capability/consent policy por canal | Conforme adapter e policy | Somente executor com aprovação e conta Client | Não por padrão |
+
+Roles humanas do Client determinam quem aprova SEND/PUBLISH e CRM handoff. Permissão de agente nunca substitui opt-in válido, suppression ou rate limit.

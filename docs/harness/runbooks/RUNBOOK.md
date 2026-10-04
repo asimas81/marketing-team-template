@@ -17,3 +17,5 @@ Identificar ambiente, Agency/Client, `trace_id`, `agent_run_id`, ação e versã
 | Offboarding | Suspender runs/ações, revogar conexões, exportar, remover acesso e validar retenção conforme [modelo](../../marketing-management-os/CLIENT_OFFBOARDING_MODEL.md) |
 
 Backup/restore e RTO/RPO concretos dependem de ambiente/SPEC. Depois de incidente, registrar causa, impacto, correção, eval/test novo e decisão de reabilitação humana. Este runbook é alvo documental, não automação configurada.
+
+Para Engagement futuro: diante de envio duplicado ou consentimento revogado, pausar sequence/canal no Client, bloquear novas tentativas, preservar EngagementAction/Events e approvals, reconciliar provider message IDs e suppression, notificar owner conforme política e testar deduplicação antes de reabilitar. Webhook de origem/Client ambíguo fica em quarentena. CRM sync incerto consulta status externo antes de repetir; dados pessoais não são copiados para ticket ou trace. [Contrato de canal](../contracts/ENGAGEMENT_CHANNEL_CONTRACT.md) define os estados.

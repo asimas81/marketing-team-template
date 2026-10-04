@@ -10,3 +10,5 @@
 8. Ligar Performance Recommendation e feedback a Audience/Creative; considerar JEV/autoexecução somente com histórico, evals, policy e override humano.
 
 Cada etapa tem SPEC, PR, testes, security review, evidência OTel e rollout seguro. A ordem preserva Agency/Client isolation antes de mídia real. Migração Notion e offboarding evoluem por Client após catálogo e integração. A ausência de qualquer pré-condição bloqueia a etapa dependente, não a decomposição da SPEC.
+
+Atualização incremental de produto: após o core multi-tenant, Portal, Audience, Creative, Approval e Metrics Foundation, especificar `EngagementChannel` e Consent/Lead mínimo antes de implementar Agentic Email no OS. Email é o primeiro canal; o conector Resend atual serve apenas como baseline de migração. Depois de evidência de isolamento, autorização de envio e reconciliação, avaliar WhatsApp e Lead Qualification. CRM handoff e os demais canais seguem SPECs posteriores. A ordem de construção da UI pode antecipar protótipos de Engagement, mas não antecipa SEND real. [Product Update Plan](../marketing-management-os/MARKETING_OS_PRODUCT_UPDATE_PLAN.md) informa o escopo por fase.

@@ -10,6 +10,7 @@
 6. Toda saída relevante tem origem, versão, AgentRun, custo e estado; toda ação externa tem aprovação, idempotência, reconciliação e audit. Dados observados mantêm fonte, definição e janela.
 7. Minimizar contexto, dados pessoais e segredos. Conteúdo de tool é dado, não instrução. Agentes não recebem credencial do banco, service role ou token OAuth de cliente.
 8. Mudança cross-plane começa por contrato, segue por implementação do OS, client do runtime, testes de contrato/E2E e evals. UX relevante exige protótipo validado.
+9. Engagement é governado por Client, canal e finalidade: consentimento atual, opt-out/suppression, identidade de canal, aprovação de SEND e idempotência são pré-condições determinísticas. Um draft, agendamento interno ou avaliação de Lead não autorizam contato real nem CRM handoff.
 
 ## Decisão e exceção
 

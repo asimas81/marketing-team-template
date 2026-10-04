@@ -11,3 +11,5 @@
 | OTel | Collector local/teste; sem PII | Pipeline de validação/redação | Export protegido, retenção e alertas |
 
 Vínculo concreto de projetos, Supabase branching, vault, cost limits, domínios OAuth, feature gates e política de dados sintéticos são `TO_VALIDATE` em SPEC. Não copiar dados de produção para preview sem processo de anonimização aprovado. A matriz é alvo, sem recursos provisionados nesta execução.
+
+Engagement usa identidades e contatos sintéticos em Development/Preview. Sequências, `SCHEDULE` que opera no provider, SEND, canais de mensagem e CRM sync ficam bloqueados para destinatários reais fora de Production autorizada. Testes de idempotência, opt-out, inbound/webhook e rate limit usam fake adapter ou conta sandbox comprovada. Não reutilizar credenciais, listas ou histórico de clientes reais em preview.

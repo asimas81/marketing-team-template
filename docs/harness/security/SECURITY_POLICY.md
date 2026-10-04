@@ -11,3 +11,9 @@ Uploads e assets exigem tipo/tamanho, sanitização, malware check quando aplic�
 ## Verificação
 
 Gates: testes allow/deny por API/RLS/tool, secret scan, avaliação adversarial de agente, revisão de OAuth/vault, teste de expiração de membership e aprovação, auditoria de ação externa. Política concreta de retenção, residência e controles legais por mercado permanecem decisões de SPEC.
+
+## Engagement, contato e consentimento
+
+Para cada envio, resolver `ClientWorkspace`, `ClientIntegration`, `ChannelIdentity`, Lead/destinatário e finalidade. Verificar `ConsentRecord` aplicável ao canal e à finalidade, opt-in/opt-out, suppression/unsubscribe, conta/remetente autorizado, ClientPolicy e janela de envio imediatamente antes do side effect. Consentimento de Email não autoriza WhatsApp, SMS ou DM; identidade igual em dois Clients não compartilha consentimento. Ausência, revogação, fonte não verificável ou suppression bloqueia SEND e registra razão sem expor dados pessoais ao agente.
+
+Credenciais de canais e CRM são referências por Client em vault server-side; callbacks/webhooks autenticados são associados à conta e Client antes de qualquer leitura ou escrita. Contatos e threads são minimizados por finalidade, separados de fatos de produto, com retenção/acesso/exportação/deleção próprios. Lead Qualification recebe envelope e resumo mínimos, nunca base completa. `EngagementAction` usa idempotency key durável por destinatário/variante, rate limit por conta/Client/canal, retry limitado e reconciliação de mensagem incerta antes de nova tentativa. Audit de SEND inclui ator, approval, consent snapshot, identidade pseudonimizada, conta, artifact/version, provider message ID, resultado e trace; logs/traces omitem endereço, telefone, texto privado e token. Os controles detalhados estão no [Engagement Channel Contract](../contracts/ENGAGEMENT_CHANNEL_CONTRACT.md).

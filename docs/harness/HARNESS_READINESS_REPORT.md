@@ -8,7 +8,7 @@ Esta avaliação executa documentalmente o [Harness Engineering v1.2](../marketi
 | --- | --- | --- |
 | Architecture / control-execution boundary | PARTIAL | Constitution e contratos escritos; ADRs aguardam aprovação |
 | Control Plane / business state | BLOCKED | Entidades e ownership documentados; aplicação/banco não implementados |
-| Execution Plane / Eve / agentes | PARTIAL | Sete especialistas atuais; integração OS e três futuros pendentes |
+| Execution Plane / Eve / agentes | PARTIAL | Sete especialistas atuais; integração OS e Audience/Paid Media/Performance/Lead Qualification futuros pendentes |
 | Agency tenancy / Client isolation / RBAC | BLOCKED | Políticas e matriz definidas; nenhuma prova API/RLS cross-tenant |
 | Supabase / Auth / RLS | BLOCKED | Escolha alvo e política; sem projeto, schema, grants ou testes |
 | API contract / Agent context | PARTIAL | Contrato lógico v2; formato, transporte, autenticação delegada e versão pendentes |
@@ -21,6 +21,9 @@ Esta avaliação executa documentalmente o [Harness Engineering v1.2](../marketi
 | OpenTelemetry / audit / cost | PARTIAL | Política e correlação; instrumentação/smoke test pendentes |
 | Tools / evals | PARTIAL | Catálogo e políticas; suíte cross-client/contract tests pendente |
 | CI/CD / environments | PARTIAL | Políticas e matriz; pipelines/projetos isolados não configurados |
+| Engagement Channel / Agentic Email | PARTIAL | Contrato de canal, consentimento e SEND documentados; módulo OS, adapter, listas e testes ausentes |
+| Lead model / qualification / CRM handoff | BLOCKED | Entidades e envelope mínimo planejados; agente, CRM, política e evals não existem |
+| WhatsApp/SMS/Instagram DM/Messenger/Web Chat | BLOCKED | Capabilities futuras; nenhum provider/credencial/consent policy de canal validado |
 
 ## Blockers e próximo passo
 
@@ -31,3 +34,22 @@ As SPECs A01/A02 (Agency Tenant, Auth, memberships e RLS) têm escopo e critéri
 `HARNESS_READY = false`
 
 `SPEC_READINESS = PARTIAL`
+
+## Atualização incremental após Product Update Plan
+
+O [Product Update Plan](../marketing-management-os/MARKETING_OS_PRODUCT_UPDATE_PLAN.md), o [Design System](../marketing-management-os/MARKETING_OS_DESIGN_SYSTEM.md) e a [direção de protótipo](../marketing-management-os/MARKETING_OS_PROTOTYPE_INSPIRATION.md) colocam Engagement na visão de Client, com Agentic Email após o core e demais canais, Lead Qualification e CRM em fases posteriores. O [Engagement Channel Contract](./contracts/ENGAGEMENT_CHANNEL_CONTRACT.md) define ownership por Client, Lead/ChannelIdentity/ConsentRecord/ConversationThread/EngagementEvent, capability por canal e separação `DRAFT/PREPARE/SCHEDULE/SEND/PUBLISH`. Policies de segurança, aprovação, contexto, OTel, tools, testes e ambiente foram atualizadas. A arquitetura anterior permanece válida.
+
+### NEW_BLOCKERS
+
+- Para Agentic Email no OS: modelo persistente de consentimento e suppression por canal/finalidade, ClientIntegration/identidade de remetente, aprovação de SEND, idempotência por destinatário, reconciliação, limites de taxa, audit e teste cross-client. O Resend legado com gate Eve não satisfaz esses requisitos sozinho.
+- Para Lead Qualification/CRM: Lead model, identidade de canal, contexto minimizado, critérios de avaliação evidenciada, permissão de handoff, mapping de campos, consentimento/finalidade e conector testado.
+- Para qualquer novo canal: capability e provider reais, política de opt-in/opt-out, inbound/receipt quando aplicável, credenciais por Client, rate limits, ambiente de teste e contrato de segurança revisado.
+
+### FUTURE_GATES
+
+1. SPEC de Engagement Channel + Consent/Lead mínimo, com decisão de identidade, retenção e finalidade; protótipo de Engagement/Approval conforme Design System.
+2. SPEC de Agentic Email e adapter piloto client-scoped, com suite de ausência/revogação de consentimento, duplicate-send prevention, retry e webhook deduplicado antes de SEND real.
+3. Somente depois, SPEC própria para WhatsApp e Lead Qualification; avaliar CRM handoff com campos mínimos e sync idempotente.
+4. SMS, Instagram DM, Facebook Messenger e Web Chat permanecem futuros, cada qual com capability/consent/opt-out/limites validados antes de habilitar.
+
+`HARNESS_READY = false`: os blockers estruturais anteriores e os gates de Engagement continuam sem implementação/validação. `SPEC_READINESS = PARTIAL`: fundação e contrato de canal podem ser especificados; WhatsApp, CRM e Lead Qualification não estão `READY`.
