@@ -35,3 +35,9 @@ Adapters de `ImageGenerationProvider`, `VideoGenerationProvider`, `VoiceProvider
 ## Gates de integração
 
 Antes de ligar as ferramentas ao Eve, confirmar contrato de autenticação de sessão web/Slack, isolamento entre Workspaces, versão imutável de Product Context/Domain Pack, autorização de cada resource ID, trilha de run e operação, reconciliação de falha incerta, contabilização de custo e evals de fidelidade de produto/domínio, claim, handoff, qualidade criativa e prompt injection. O subagente atual não deve ser apresentado como Creative Studio pronto até esses gates passarem.
+
+## Contrato v2: Agency e Client
+
+Em `RunAgentTask`, `workspace_id` legado passa a `client_workspace_id` e acrescenta-se `agency_id`, `advisor_profile_id/version?`, `client_policy_version`, `cost_limit` e `trace_id`. O OS cria AgentRun `QUEUED` antes de invocar Eve, resolve memberships e carrega apenas contexto do Client selecionado. O permission envelope delimita agency, client, product/campaign, recursos, ações e efeitos externos; o modelo não pode ampliá-lo. Eventos `RUNNING`, `SUCCEEDED`, `FAILED`, `NEEDS_REVIEW` e custo são persistidos pelo OS com idempotência. Resultado informa IDs/version/hash de Artifact/Advisory e limitações, nunca aprovação implícita.
+
+`audience-intelligence`, `paid-media-strategist` e `performance-optimizer` são contratos futuros. O primeiro propõe pesquisa/segmento/persona evidenciados; o segundo propõe plano/draft de mídia; o terceiro produz recomendação tipada a partir de MetricSnapshots. Ferramentas de escrita só chamam API do OS. Ações Meta/Google/TikTok ficam em conectores server-side, com ClientIntegration e ExternalAccount autorizados, approval e idempotency key. Cross-client analytics entrega ao agente apenas agregados autorizados, em operação separada. OpenTelemetry propaga `trace_id` entre OS, Eve, AI Gateway e conector sem tokens ou PII em spans.

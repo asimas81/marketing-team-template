@@ -1,6 +1,6 @@
 # ROADMAP
 
-## Sequência proposta
+## Sequência anterior (baseline Workspace)
 
 | Fase | Entrega | Dependência e gate de saída |
 | --- | --- | --- |
@@ -31,3 +31,23 @@ Fases 0 a 4 formam o primeiro produto utilizável: Workspace, Product, contexto 
 ## Validação por cenário
 
 Executar ensaios com dois Workspaces, dois Products no mesmo Workspace, uma campanha multproduto, mudança de contexto após aprovação, claim sem prova, Domain Pack fora de escopo, criativo com claim alterado, asset sem licença, importação Notion parcial, falha incerta no Resend e retomada de sessão Eve. Medir se cada resposta e entrega aponta para a versão certa, se aprovações mostram o payload exato e se nenhum dado cruza a fronteira de Workspace. Seguir as verificações estáticas do repositório (`pnpm validate`) e exercitar o TUI quando houver credenciais de modelo disponíveis.
+
+## Sequência v2 para decomposição em SPECs
+
+A tabela anterior registra o baseline pré-agência. A sequência abaixo governa a arquitetura v2; toda fase exige contrato, testes de isolamento e trilha OTel/audit adequados, sem presumir que documentação seja implementação.
+
+| Onda | Capacidade | Gate antes da próxima |
+| --- | --- | --- |
+| A1 | Agency Tenant, Supabase Auth, AgencyMembership/RBAC e AgencyPolicy | Cross-agency deny por API/RLS e resolução de principal |
+| A2 | Client Workspace, ClientWorkspaceMembership/RBAC, ClientPolicy e offboarding básico | Cross-client deny inclusive por service role delegada, UI, tool e asset |
+| A3 | Product/Brand, Product Context, Domain Pack binding e Advisor Profile | Versões publicadas, claim/evidência e escopo por Client |
+| A4 | Campaign, WorkRequest, Artifact/version, Approval Inbox e Publications internas | Snapshot aprovado e ownership de ponta a ponta |
+| A5 | AgentRun API, Context Gateway, Eve integration e OTel distribuído | Um Client por run, custo/trace, handoff e erro/retry visíveis |
+| A6 | Agency/Client Dashboards, Client Portal e Reports | Agregados só de Clients autorizados, roles do portal e UX validada |
+| A7 | Audience Intelligence, Creative Studio inicial e Experimentation Core | Persona evidenciada, brief/variant com direitos e experimento versionado |
+| A8 | Client Integrations e conectores read-only com account mapping | Vault/reauth/revogação, capability discovery, métricas importadas e isolamento |
+| A9 | Paid Media planning e execução controlada | Policy de budget, aprovação humana, idempotência, reconciliação e test account |
+| A10 | Normalização de métricas, Performance Optimizer e learning loop | Definição, atribuição, freshness e recomendações sem execução direta |
+| A11 | JEV limitado e autoexecução controlada | Histórico, evals, caps, override, compensação e aprovação explícita |
+
+Creative Studio amplia landing pages/books/vídeo por adapters após A7. Migração Notion pode ocorrer por Client após A4, com corte de escrita quando o fluxo interno estiver completo. Nenhuma conexão de mídia real precede A1–A8. Em cada SPEC, separar owner do Control Plane e do runtime Eve, contrato versionado, UI prototipada quando necessário, migração compatível, RLS/tests/evals e rollback. O [gap analysis](./PRD_ARCHITECTURE_GAP_ANALYSIS.md) e o [harness readiness](./HARNESS_READINESS_REPORT.md) registram dependências abertas.

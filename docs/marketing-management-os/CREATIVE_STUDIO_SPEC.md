@@ -42,3 +42,7 @@ Os adapters são capacidades configuradas por Workspace/Campaign: `ImageGenerati
 ## UI e aceitação
 
 Em Campaign → Creatives, o usuário cria brief, acompanha geração, visualiza set, versões e variantes, comenta, pede revisão, aprova e vê publicação/performance. Repurposing começa de um artifact aprovado e escolhe formatos derivados. O MVP criativo passa quando um mesmo brief gera ao menos duas variantes sociais por provider, ambas têm source/versão/custo/direitos, o review distingue QA textual de QA renderizado e nenhuma ação externa ocorre sem autorização. Vídeo, book e landing page de nível 2/3 têm gates próprios no [ROADMAP](./ROADMAP.md).
+
+## Escopo Client v2
+
+CreativeBrief, CreativeSet, CreativeArtifact, CreativeVariant e CreativeAsset pertencem a `(agency_id, client_workspace_id)`; seus Products, Campaign, fontes e assets devem pertencer ao mesmo Client. Provider criativo é permitido por ClientPolicy e custo se acumula por Client/Campaign/AgentRun. Repurposing cross-client exige nova importação/revisão de direitos, contexto e aprovação; copiar um asset não copia autorização de uso. Performance de criativo referencia a versão publicada e MetricSnapshot normalizado. `CREATE_VARIANT` vindo de Performance cria novo brief/versão e pode alimentar Experiment, sem alterar peça já aprovada.

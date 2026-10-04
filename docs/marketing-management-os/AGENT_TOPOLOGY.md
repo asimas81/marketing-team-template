@@ -49,3 +49,9 @@ O fluxo preferido é `Product Context + Domain Advisory + estratégia/copy aprov
 ## Controle do contexto
 
 Skills genéricas de escrita e estilo permanecem genéricas. Regras de segmento residem no Domain Pack e no parecer do Advisor. Convenções específicas de um canal permanecem com o especialista do canal. O lead não copia conhecimento vertical para sua instrução global. Essa separação permite instalar/remover um pack sem alterar comportamento para outros Products.
+
+## Topologia v2 e disponibilidade
+
+No repositório atual permanecem Lead e sete especialistas Eve: os cinco originais, `product-domain-specialist` e `creative-producer`. A topologia alvo acrescenta `audience-intelligence` antes de planejamento de mídia; numa onda posterior, `paid-media-strategist` e `performance-optimizer`. Esses três são planejados, não subagentes disponíveis. Meta, Google e TikTok são connectors/tools futuros, não três agentes. O Lead seleciona especialistas pelas descrições descobertas pelo Eve; o OS decide Request, estado, policy e autorização. Especialistas não delegam entre si: o Lead encadeia handoffs.
+
+Cada AgentRun alvo é criado pelo OS com `agency_id`, `client_workspace_id`, `product_id?`, `campaign_id?`, `requested_by`, permission envelope, versões fixadas de ClientPolicy, Product Context, Domain Pack, Advisor Profile e Brief, `trace_id` e limites de custo. O gateway resolve membership e minimiza contexto. Uma execução comum contém um Client; analytics cross-client usa agregado autorizado separado. Advisor Profile parametriza o especialista genérico para Client/Product e poderá apontar para Remote Agent futuramente. Audience Intelligence escreve propostas evidenciadas de segmento/persona; Paid Media Strategist prepara plano; Performance Optimizer recomenda. Nenhum deles publica ou gasta. O [contrato de runtime](./AGENT_RUNTIME_CONTRACT.md) e a [spec do Advisor](./CLIENT_ADVISOR_PROFILE_SPEC.md) detalham a fronteira.

@@ -33,3 +33,7 @@ Casos adversariais incluem claim não aprovado inserido em imagem, preço altera
 ## Gates de lançamento
 
 Antes de anunciar advisory operacional: API de contexto/pack, schema persistido, auth por Workspace, versões, tracking de run e evals acima passam. Antes de anunciar geração criativa: provider adapter, asset store, custo, direitos, versionamento, QA renderizado e aprovação por snapshot passam. Antes de execução externa: testes de idempotência, reconciliação e autorização sobre versão/destino exatos passam. O TUI Eve é usado para ensaio de ponta a ponta quando a conexão com o modelo estiver disponível.
+
+## Gates v2
+
+Adicionar fixtures com duas Agencies, dois Clients na mesma Agency e usuário com papéis diferentes: RLS/API/tool/storage/portal/trace não podem revelar dados cruzados. Advisor Profile por Client/Product não pode misturar fontes; Run deve fixar as versões usadas. Audience Intelligence deve distinguir Segment e Persona, citar evidência e não validar inferência sem policy. Paid Media deve reconhecer capability ausente e conta errada; Performance deve recusar comparação de métricas com janela incompatível e recomendar investigação quando dados insuficientes. Aprovação deve falhar após troca de conta, budget, payload, policy ou membership. Importação Notion e offboarding precisam provar ownership e revogação por Client. Evals de agente complementam, mas não substituem testes determinísticos de autorização, idempotência e RLS.

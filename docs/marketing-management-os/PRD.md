@@ -1,106 +1,1706 @@
 # PRD — Marketing Management OS
+## Agência Multi-Tenant com Times Agentic de Marketing
 
-## Status e escopo
+**Versão:** 2.0  
+**Status:** proposta consolidada para revisão de produto e arquitetura  
+**Produto:** Marketing Management OS  
+**Modelo operacional primário:** agência gerenciando múltiplos clientes  
+**Arquitetura:** Control Plane + Execution Plane  
+**Control Plane:** Marketing Management OS  
+**Execution Plane:** Marketing Agents / Eve  
+**Infraestrutura alvo:** Vercel + Supabase + Eve + OpenTelemetry
 
-Status: proposta consolidada para revisão de produto e arquitetura. Este PRD incorpora o documento fornecido `MARKETING_OS_PRODUCT_DOMAIN_AND_CREATIVE_SPECIALISTS.md` à visão anterior do Marketing Management OS. Descreve o produto alvo e seus critérios de aceite, não afirma que as capacidades já estejam implementadas. O [AS-IS](./AS-IS.md) registra a base anterior; o [ROADMAP](./ROADMAP.md) ordena a entrega.
+---
 
-## Problema
+# 1. Resumo executivo
 
-O template atual oferece um lead Eve, sete especialistas e uma interface de chat, mas não possui registros próprios de Workspace, Product, Campaign, entregáveis, aprovações ou métricas. O contexto de marca em Blob é global. Peças longas dependem do Notion e campanhas de email vivem no Resend. Em trabalho multproduto ou de domínio especializado, um briefing sem fontes e versões pode misturar fatos, introduzir claims incorretos ou espalhar regras verticais pelos especialistas genéricos. Produção visual ainda resulta em especificações de texto, sem catálogo, versões ou revisão de assets.
+O Marketing Management OS é uma aplicação Web para operar uma agência de marketing assistida por agentes de IA.
 
-## Visão do produto
+A plataforma deve permitir que uma agência:
 
-Um Workspace cadastra Products, publica um Product Context Pack por versão, instala Domain Packs quando úteis e planeja Campaigns. O Marketing OS é a fonte de verdade e o plano de controle: identidade, permissões, estado, artefatos, assets, decisões, integrações e métricas. O Eve é o plano de execução: o lead encadeia sete especialistas, inclusive um consultor de produto/domínio e um produtor criativo. Notion é integração opcional. Resend continua executor de email; publicação, envio, gasto e deploy exigem autorização sobre uma versão exata.
+- gerencie múltiplos clientes de forma isolada;
+- mantenha produtos, marcas, contextos e regras específicas por cliente;
+- conecte contas de Meta, Google, TikTok, email, analytics e outras integrações por cliente;
+- receba solicitações de trabalho;
+- orquestre agentes especializados por meio do Eve;
+- produza estratégia, conteúdo, criativos, landing pages, books, vídeos e outros ativos;
+- gerencie revisão e aprovação;
+- publique ou execute ações externas de forma controlada;
+- acompanhe campanhas, publicações, experimentos e performance;
+- gere recomendações de otimização;
+- gerencie verba com guardrails determinísticos e aprovação;
+- mantenha um ciclo contínuo de pesquisa, criação, execução, medição e aprendizado.
+
+A interface Web é o produto principal.
+
+O chat com o Marketing Lead é apenas uma das formas de operar o sistema.
+
+---
+
+# 2. Problema
+
+Times e agências de marketing trabalham hoje com informações fragmentadas entre:
+
+- gerenciadores de anúncios;
+- planilhas;
+- chats;
+- ferramentas de conteúdo;
+- Notion;
+- ferramentas de email;
+- dashboards;
+- documentos;
+- ferramentas de design;
+- fornecedores de IA.
+
+Um time agentic isolado resolve parte da produção, mas não resolve a gestão operacional.
+
+Sem um sistema central surgem problemas como:
+
+- contexto de clientes misturado;
+- claims incorretos;
+- dificuldade de rastrear quem aprovou o quê;
+- produção desconectada dos resultados;
+- criativos sem versionamento;
+- personas sem evidência;
+- testes A/B presos dentro de cada canal;
+- orçamento administrado manualmente;
+- dificuldade para entender quais agentes estão trabalhando;
+- falta de visão executiva por cliente;
+- falta de visão consolidada da agência;
+- dependência excessiva de ferramentas externas como Notion.
+
+---
+
+# 3. Visão do produto
+
+A plataforma deve funcionar como um **Marketing Operating System para agências**.
+
+Hierarquia conceitual:
 
 ```text
-Workspace → Product + Product Context → Campaign + Brief
-                 ↑ Domain Pack opcional   ↓
-      Product/Domain Advisory → Lead → especialistas de craft
-                                      ↓
-                  Creative Brief → Creative Set/Artifacts/Variants
-                                      ↓
-                       Review → Approval → External Action → Metrics
+PLATFORM
+↓
+AGENCY TENANT
+↓
+CLIENT WORKSPACE
+↓
+PRODUCT / BRAND
+↓
+CAMPAIGN
+↓
+WORK / ARTIFACTS / EXPERIMENTS / PUBLICATIONS
+↓
+METRICS / LEARNING / OPTIMIZATION
 ```
 
-## Usuários e necessidades
+O Marketing OS é o Control Plane e System of Record.
 
-| Papel | Necessidade principal |
-| --- | --- |
-| Workspace admin | Configurar membros, políticas, integrações, custos e escopo dos Products |
-| Product owner | Manter fatos, oferta, limitações, claims e versões aprovadas do Product Context |
-| Domain owner | Curar Domain Pack reutilizável, fontes, restrições e mudanças de versão |
-| Marketing owner | Definir estratégia, brief, canais, metas e prioridade de Campaign |
-| Editor/creative reviewer | Revisar conteúdo e criativos com fontes, diff, preview e variantes |
-| Approver de execução | Autorizar destino, público, horário, custo e payload final de publicação/envio |
+O Eve é o Execution Plane.
 
-## Princípios de produto
+```text
+Marketing OS
+decide O QUE precisa acontecer
+e registra a verdade do negócio
 
-1. O OS possui estado de negócio; agentes não escrevem diretamente no banco nem usam memória de sessão como fonte de verdade.
-2. Os cinco especialistas originais preservam seu craft. O `product-domain-specialist` fornece verdade, limites e riscos; o `creative-producer` transforma estratégia e conteúdo em ativos. Nenhum deles assume aprovação de negócio.
-3. Um agente genérico atende vários segmentos. Product Context descreve o produto; Domain Pack descreve conhecimento reutilizável; Campaign Brief descreve a tarefa temporal.
-4. Toda saída relevante aponta para Workspace, Product, versões de contexto/pack/brief, fontes, execução do agente e, quando houver, versão publicada.
-5. Aprovação editorial e autorização de ação externa são decisões distintas. Mudanças no snapshot invalidam a decisão anterior.
-6. Pesquisa pública e inferência são identificadas como tais; conflitos com fontes aprovadas abrem revisão.
+Eve / Marketing Lead
+decide COMO executar cognitivamente
+e QUAL especialista deve atuar
+```
 
-## Requisitos funcionais
+---
+
+# 4. Princípios fundamentais
+
+1. **Agents never own business state. Marketing OS always owns business state.**
+2. Todo recurso pertence explicitamente a um Agency Tenant e, quando aplicável, a um Client Workspace.
+3. Nenhum agente pode determinar autorização a partir de texto recebido no prompt.
+4. Cada cliente deve possuir contexto e integrações próprias.
+5. O sistema deve funcionar sem Notion.
+6. Notion pode existir como integração opcional.
+7. Os agentes de craft permanecem genéricos.
+8. Especialização de segmento ocorre por contexto, Domain Pack e Advisor Profile.
+9. Personas devem ser baseadas em evidência.
+10. Produção e publicação são etapas diferentes.
+11. Revisão editorial e autorização de execução são decisões diferentes.
+12. Publicar, enviar, gastar e excluir exigem policy explícita.
+13. Toda alteração financeira deve ser auditável.
+14. Toda saída relevante deve ser versionada e rastreável.
+15. Performance deve retroalimentar audiência, criativo, estratégia e experimentação.
+16. LLMs não possuem autoridade financeira ou de autorização.
+17. JEV só deve atuar em decisões estreitas, tipadas e guardadas por regras determinísticas.
+
+---
+
+# 5. Modelo de tenancy
+
+## 5.1 Agency Tenant
+
+A unidade superior de tenancy é a agência.
+
+Exemplos:
+
+```text
+Nora Inteligência Digital
+Agência XPTO
+Consultoria ABC
+```
+
+Cada Agency Tenant possui:
+
+- membros;
+- papéis;
+- políticas;
+- clientes;
+- custos;
+- integrações de nível agência quando aplicável;
+- limites de uso;
+- preferências;
+- dashboards consolidados.
+
+Nenhum Agency Tenant pode acessar recursos de outro.
+
+---
+
+## 5.2 Client Workspace
+
+Cada cliente da agência recebe um Client Workspace próprio.
+
+Exemplos:
+
+```text
+Cliente: Doce Capítulo
+Cliente: Incorporadora Alfa
+Cliente: Clínica Beta
+```
+
+O Client Workspace é a principal fronteira operacional de isolamento dentro da agência.
+
+Ele possui:
+
+- membros da agência autorizados;
+- membros do cliente, quando convidados;
+- Products / Brands;
+- Product Context;
+- Domain Packs;
+- Advisor Profile;
+- Campaigns;
+- Audiences;
+- Personas;
+- Artifacts;
+- Creatives;
+- Experiments;
+- Paid Media Accounts;
+- Metrics;
+- Approvals;
+- Integrations;
+- Costs;
+- Agent Runs.
+
+---
+
+## 5.3 Product / Brand
+
+Um cliente pode possuir um ou vários Products ou Brands.
+
+Exemplo:
+
+```text
+Client Workspace
+├── Brand A
+│   ├── Product A1
+│   └── Product A2
+└── Brand B
+```
+
+Cada Product pode possuir:
+
+- Product Context Pack;
+- Domain Pack association;
+- campanhas próprias;
+- personas;
+- assets;
+- regras;
+- goals;
+- oferta;
+- claims;
+- métricas.
+
+---
+
+# 6. Client-Specific Advisor
+
+Cada Client Workspace deve poder possuir um Advisor especializado.
+
+A experiência para o usuário pode ser:
+
+```text
+Advisor do Cliente
+```
+
+mas a implementação padrão deve utilizar o agente genérico:
+
+```text
+product-domain-specialist
+```
+
+configurado por:
+
+```text
+Advisor Profile
++
+Client Context
++
+Product Context
++
+Domain Pack
++
+Client Knowledge Sources
++
+Client Policies
+```
+
+Isso significa:
+
+```text
+1 cliente
+→ 1 Advisor Profile lógico
+
+não necessariamente
+
+1 cliente
+→ 1 código/agente diferente
+```
+
+O sistema deve permitir no futuro apontar um cliente para um Remote Agent específico quando houver necessidade de:
+
+- runtime isolado;
+- conhecimento proprietário;
+- requisitos regulatórios;
+- release independente;
+- credenciais próprias.
+
+---
+
+# 7. Advisor Profile
+
+Entidade sugerida:
+
+```text
+AdvisorProfile
+```
+
+Campos conceituais:
+
+```yaml
+advisor_profile:
+  agency_id:
+  client_workspace_id:
+  product_id:
+  name:
+  domain_pack_ids:
+  knowledge_source_ids:
+  required_review_types:
+  claims_policy:
+  risk_policy:
+  model_policy:
+  agent_binding:
+  status:
+```
+
+O Advisor Profile nunca é fonte autônoma da verdade.
+
+Ele referencia fontes versionadas.
+
+---
+
+# 8. Usuários e papéis
+
+## 8.1 Papéis de agência
+
+### Agency Owner
+- administração completa;
+- billing da plataforma;
+- criação de clientes;
+- políticas globais.
+
+### Agency Admin
+- usuários;
+- clientes;
+- integrações;
+- políticas.
+
+### Account Director
+- acesso a múltiplos clientes;
+- visão executiva;
+- aprovação estratégica.
+
+### Account Manager
+- operação de clientes atribuídos;
+- criação de solicitações;
+- campanhas;
+- follow-up.
+
+### Strategist
+- estratégia;
+- produto;
+- audiência;
+- campanhas.
+
+### Media Buyer
+- mídia paga;
+- campanhas;
+- experimentos;
+- recomendações;
+- execução autorizada.
+
+### Creative / Content
+- conteúdo;
+- criativos;
+- revisão.
+
+### Analyst
+- métricas;
+- performance;
+- relatórios.
+
+---
+
+## 8.2 Papéis do cliente
+
+### Client Admin
+- usuários do cliente;
+- visualização ampla;
+- aprovações.
+
+### Client Approver
+- aprova peças e/ou execução conforme escopo.
+
+### Client Reviewer
+- comenta;
+- solicita alterações.
+
+### Client Viewer
+- somente leitura.
+
+---
+
+# 9. Escopo de autorização
+
+Toda autorização deve considerar:
+
+```text
+authenticated_user
++
+agency_membership
++
+client_workspace_membership
++
+role
++
+resource_scope
++
+action
+```
+
+Nunca apenas:
+
+```text
+user_id
+```
+
+ou:
+
+```text
+workspace_id vindo do prompt
+```
+
+---
+
+# 10. Interface Web — visão geral
+
+A aplicação deve possuir navegação primária semelhante a:
+
+```text
+Agency Dashboard
+Clients
+Requests
+Products
+Audiences
+Campaigns
+Content
+Creative Studio
+Experiments
+Paid Media
+Performance
+Approvals
+Agents
+Integrations
+Reports
+Settings
+```
+
+Dentro de cada Client Workspace a interface muda para o contexto daquele cliente.
+
+---
+
+# 11. Agency Dashboard
+
+Visão consolidada para a agência.
+
+Deve exibir:
+
+- clientes ativos;
+- campanhas ativas;
+- investimento gerenciado;
+- leads;
+- conversões;
+- CPL;
+- CPA;
+- ROAS quando aplicável;
+- aprovações pendentes;
+- tarefas atrasadas;
+- Agent Runs em execução;
+- falhas de integrações;
+- recomendações de performance;
+- alertas de orçamento;
+- custo de IA;
+- custo de geração criativa.
+
+Filtros:
+
+- Client;
+- Product;
+- Channel;
+- Period;
+- Account Manager.
+
+---
+
+# 12. Client Dashboard
+
+Cada cliente possui dashboard próprio.
+
+Exibir:
+
+- campanhas;
+- canais;
+- investimento;
+- resultados;
+- conteúdos publicados;
+- criativos;
+- experimentos;
+- recomendações;
+- tarefas;
+- aprovações;
+- status das integrações.
+
+---
+
+# 13. Requests / Solicitações
+
+A interface deve permitir criar solicitações estruturadas.
+
+Exemplo:
+
+```text
+Cliente: Doce Capítulo
+Produto: Doce Capítulo
+Campanha: Lançamento Outubro
+
+Solicitação:
+Criar campanha de aquisição
+
+Objetivo:
+500 leads
+
+Budget:
+R$ 20.000
+
+Canais desejados:
+Meta
+Google
+Email
+```
+
+A solicitação cria:
+
+```text
+WorkRequest
++
+AgentRun
+```
+
+e passa ao Marketing Lead.
+
+---
+
+# 14. Agent Run Management
+
+A UI deve permitir acompanhar:
+
+```text
+Product Marketer       DONE
+Audience Intelligence  DONE
+Domain Advisor          DONE
+Content                 RUNNING
+Creative Producer       RUNNING
+Paid Media              WAITING
+```
+
+O usuário deve ver:
+
+- status;
+- início;
+- duração;
+- custo;
+- artefatos gerados;
+- bloqueios;
+- solicitações de aprovação;
+- erros;
+- retry quando permitido.
+
+---
+
+# 15. Product Context
+
+Cada Product deve possuir Product Context versionado.
+
+A UI deve permitir:
+
+- visualizar versão atual;
+- editar draft;
+- comparar diff;
+- anexar fontes;
+- aprovar;
+- publicar versão;
+- consultar histórico.
+
+---
+
+# 16. Domain Packs
+
+Domain Packs são reutilizáveis entre clientes e produtos quando apropriado.
+
+Exemplos:
+
+- Real Estate;
+- Financial Services;
+- Healthcare;
+- SaaS;
+- E-commerce;
+- Relationship / Well-being.
+
+Podem ser:
+
+- privados da agência;
+- privados do cliente;
+- reutilizáveis;
+- futuramente instaláveis.
+
+---
+
+# 17. Audience Intelligence
+
+Área:
+
+```text
+Audiences
+├── Research
+├── Segments
+├── Personas
+├── Evidence
+├── Hypotheses
+└── Experiments
+```
+
+O sistema deve suportar:
+
+- pesquisa de mercado;
+- pesquisa de concorrentes;
+- sinais de busca;
+- pesquisa pública;
+- entrevistas;
+- surveys;
+- dados de CRM autorizados;
+- performance histórica;
+- dados de campanha.
+
+---
+
+# 18. Audience Segment
+
+Segment é uma estrutura mais objetiva.
+
+Exemplo:
+
+```text
+Mulheres
+35–50
+Brasil
+interesse em desenvolvimento pessoal
+```
+
+Deve possuir:
+
+- origem;
+- critérios;
+- evidence;
+- version;
+- status.
+
+---
+
+# 19. Persona
+
+Persona é interpretativa.
+
+Deve possuir:
+
+- version;
+- evidence;
+- confidence;
+- status;
+- goals;
+- barriers;
+- objections;
+- media behavior;
+- language;
+- triggers.
+
+Estados:
+
+```text
+DRAFT
+HYPOTHESIS
+TESTING
+VALIDATED
+NEEDS_REVIEW
+DEPRECATED
+```
+
+Persona não pode ser considerada validada apenas porque um LLM a produziu.
+
+---
+
+# 20. Campaign Management
+
+Campaign é entidade central.
+
+Deve possuir:
+
+- Client;
+- Product;
+- objective;
+- audience;
+- persona;
+- offer;
+- channels;
+- campaign brief;
+- budget;
+- targets;
+- status;
+- tasks;
+- artifacts;
+- experiments;
+- metrics;
+- approvals;
+- publications.
+
+---
+
+# 21. Campaign UI
+
+Exemplo:
+
+```text
+Campaign: Lançamento Doce Capítulo
+
+Status: ACTIVE
+Budget: R$ 30.000
+Spend: R$ 12.340
+
+Objective:
+500 leads
+
+Audience:
+Persona A
+Persona B
+
+Channels:
+Meta       ACTIVE
+Google     ACTIVE
+TikTok     TESTING
+Email      ACTIVE
+
+Strategy          APPROVED
+Content           APPROVED
+Creatives         3 IN REVIEW
+Landing Page      PUBLISHED
+Paid Media        RUNNING
+Experiments       2 RUNNING
+Performance       RECOMMENDATION AVAILABLE
+```
+
+---
+
+# 22. Content Management
+
+O OS deve armazenar a peça canônica.
+
+Tipos:
+
+- blog;
+- social post;
+- email;
+- newsletter;
+- SEO brief;
+- landing copy;
+- ad copy;
+- sales copy;
+- script.
+
+Notion pode exportar/importar, mas não é obrigatório.
+
+---
+
+# 23. Creative Studio
+
+Área:
+
+```text
+Creative Studio
+├── Briefs
+├── Creative Sets
+├── Drafts
+├── In Review
+├── Approved
+├── Published
+├── Experiments
+└── Performance
+```
+
+---
+
+# 24. Creative Types
+
+Suportar progressivamente:
+
+- image;
+- carousel;
+- banner;
+- ad;
+- thumbnail;
+- mockup;
+- infographic;
+- product book;
+- catalog;
+- e-book;
+- presentation;
+- landing page;
+- video;
+- Reel;
+- Short;
+- voice;
+- campaign kit.
+
+---
+
+# 25. Creative Set
+
+Exemplo:
+
+```text
+Launch Kit — Campaign 123
+├── Landing Page
+├── Product Book
+├── Instagram Carousel
+├── Reel
+├── Meta Ad A
+├── Meta Ad B
+├── TikTok Video
+└── Email Banner
+```
+
+---
+
+# 26. Repurposing
+
+A interface deve permitir:
+
+```text
+Source Artifact
+↓
+Create Derivatives
+```
+
+Exemplo:
+
+```text
+Blog Post
+→ LinkedIn carousel
+→ Instagram carousel
+→ Reel script
+→ Hero image
+→ eBook chapter
+```
+
+---
+
+# 27. Approval Inbox
+
+Tela central de aprovações.
+
+Tipos:
+
+- Product Context approval;
+- Domain Pack approval;
+- content review;
+- creative review;
+- campaign approval;
+- publication approval;
+- email send approval;
+- experiment launch approval;
+- budget change approval;
+- pause/resume approval.
+
+---
+
+# 28. Approval Snapshot
+
+A aprovação deve registrar exatamente o que foi aprovado:
+
+- artifact version;
+- destination;
+- audience;
+- schedule;
+- budget;
+- payload/hash;
+- actor;
+- timestamp.
+
+Mudança no snapshot invalida approval quando policy exigir.
+
+---
+
+# 29. Publications
+
+A plataforma deve acompanhar publicações.
+
+Exemplo:
+
+```text
+Instagram Carousel
+Published
+03/10 14:30
+External ID: ...
+Reach: ...
+CTR: ...
+
+Meta Ad A
+Running
+Spend: ...
+Leads: ...
+CPL: ...
+
+Google Campaign
+Running
+Spend: ...
+Conversions: ...
+CPA: ...
+```
+
+---
+
+# 30. Client Integration Center
+
+Cada Client Workspace deve conectar suas próprias contas.
+
+Área:
+
+```text
+Integrations
+├── Meta
+├── Google Ads
+├── TikTok Ads
+├── Resend
+├── Brevo
+├── Analytics
+├── CRM
+├── Notion
+└── outras
+```
+
+A conexão deve pertencer ao Client Workspace.
+
+---
+
+# 31. Paid Media Account Model
+
+Entidades conceituais:
+
+```text
+ChannelConnection
+AdAccount
+Page/Profile
+Pixel/ConversionSource
+CampaignExternalMapping
+CreativeExternalMapping
+```
+
+Uma Agency pode administrar múltiplas contas de múltiplos clientes sem mistura.
+
+---
+
+# 32. Meta / Google / TikTok
+
+Inicialmente são connectors/tools, não agentes separados.
+
+```text
+Paid Media Strategist
+├── Meta Ads Connector
+├── Google Ads Connector
+└── TikTok Ads Connector
+```
+
+Cada connector deve declarar capabilities realmente disponíveis.
+
+---
+
+# 33. Paid Media
+
+Área:
+
+```text
+Paid Media
+├── Accounts
+├── Campaigns
+├── Ad Groups / Ad Sets
+├── Ads
+├── Targeting
+├── Creatives
+├── Budgets
+├── Experiments
+├── Recommendations
+└── Change History
+```
+
+---
+
+# 34. Paid Media Strategist
+
+Responsabilidades:
+
+- channel mix;
+- campaign structure;
+- objective;
+- targeting recommendation;
+- budget recommendation;
+- experiment design;
+- creative requirements;
+- execution plan.
+
+Não movimenta spend diretamente.
+
+---
+
+# 35. Experimentation
+
+Experiment é entidade própria do OS.
+
+Tipos:
+
+```text
+CREATIVE
+AUDIENCE
+MESSAGE
+OFFER
+LANDING_PAGE
+CHANNEL
+BUDGET
+BIDDING
+```
+
+Mesmo quando executado por Meta/Google/TikTok, o experimento continua registrado no Marketing OS.
+
+---
+
+# 36. Experiment UI
+
+Exemplo:
+
+```text
+Experiment EXP-041
+
+Hypothesis:
+"Autonomia converte melhor do que romance para Persona A"
+
+Control:
+Creative A
+
+Treatment:
+Creative B
+
+Channel:
+Meta
+
+Primary metric:
+CPL
+
+Status:
+RUNNING
+```
+
+---
+
+# 37. Metrics Normalization
+
+O sistema deve criar camada normalizada entre canais.
+
+Exemplo:
+
+```text
+Meta spend
+Google cost_micros
+TikTok spend
+↓
+normalized.spend
+```
+
+Manter também o valor nativo.
+
+---
+
+# 38. Attribution
+
+O MVP deve declarar modelo de atribuição.
+
+Métricas devem registrar:
+
+- source;
+- attribution window;
+- timestamp;
+- freshness;
+- normalized definition.
+
+Não comparar métricas incompatíveis sem aviso.
+
+---
+
+# 39. Performance
+
+Área:
+
+```text
+Performance
+├── Executive
+├── Channel
+├── Campaign
+├── Audience
+├── Persona
+├── Creative
+├── Offer
+├── Landing Page
+├── Experiments
+└── Recommendations
+```
+
+---
+
+# 40. Performance Optimizer
+
+Responsabilidades:
+
+- analisar métricas;
+- detectar anomalias;
+- comparar com targets;
+- cruzar Persona × Creative × Channel × Offer;
+- recomendar otimizações;
+- indicar dados insuficientes;
+- gerar recommendation artifact.
+
+---
+
+# 41. Recommendation Model
+
+Ações iniciais:
+
+```text
+INCREASE
+KEEP
+REDUCE
+PAUSE
+INVESTIGATE
+CREATE_VARIANT
+```
+
+Recommendation não é Execution.
+
+---
+
+# 42. Budget Management
+
+Budget é estado crítico.
+
+Regras:
+
+- LLM não altera budget;
+- JEV não bypassa limits;
+- toda alteração possui source metrics;
+- toda alteração possui reason;
+- toda alteração é auditada;
+- aprovação humana é padrão inicial.
+
+---
+
+# 43. JEV
+
+Fase futura.
+
+Quando houver dados e guardrails suficientes:
+
+```text
+STATE
++
+METRICS
++
+TARGET
++
+ALLOWED ACTIONS
+↓
+JEV
+↓
+ACTION + CONFIDENCE
+```
+
+Regras determinísticas devem existir antes e depois.
+
+---
+
+# 44. Controlled Auto-Execution
+
+Fora do MVP.
+
+Só pode existir quando:
+
+- dados suficientes;
+- confidence alta;
+- max delta respeitado;
+- campaign cap respeitado;
+- agency policy permite;
+- client policy permite;
+- connector saudável;
+- nenhuma trava humana;
+- rollback existe.
+
+---
+
+# 45. Client Portal
+
+A aplicação deve permitir oferecer um portal ao cliente.
+
+Capabilities configuráveis:
+
+- visualizar campanhas;
+- visualizar criativos;
+- comentar;
+- aprovar;
+- ver resultados;
+- baixar relatórios;
+- acompanhar histórico.
+
+O cliente não deve ver informações de outros clientes da agência.
+
+---
+
+# 46. Reports
+
+Gerar relatórios:
+
+- client performance;
+- campaign performance;
+- creative performance;
+- paid media;
+- experiment results;
+- executive summary;
+- monthly report.
+
+Podem ser exportados ou compartilhados.
+
+---
+
+# 47. Agents Area
+
+A interface deve mostrar:
+
+- agentes disponíveis;
+- Agent Runs;
+- status;
+- custo;
+- modelo;
+- duração;
+- artifacts;
+- errors;
+- approvals;
+- eval health.
+
+Não exigir uso do TUI Eve para operação diária.
+
+---
+
+# 48. Team agentic inicial
+
+```text
+Marketing Lead
+├── Product Marketer
+├── Product & Domain Specialist
+├── Audience Intelligence
+├── Content Marketer
+├── Creative Producer
+├── Social Media Coordinator
+├── SEO
+└── Email
+```
+
+Segunda wave:
+
+```text
+├── Paid Media Strategist
+└── Performance Optimizer
+```
+
+---
+
+# 49. Product & Domain Advisor por cliente
+
+Cada Client Workspace pode configurar seu Advisor Profile.
+
+Fluxo:
+
+```text
+Client Workspace
+↓
+Advisor Profile
+↓
+product-domain-specialist
+↓
+Product Context
++
+Domain Pack
++
+Client Sources
++
+Policies
+```
+
+O agente continua genérico.
+
+---
+
+# 50. Data isolation
+
+Isolamento obrigatório entre:
+
+- Agency Tenants;
+- Client Workspaces;
+- Products quando policy exigir.
+
+Nenhum tool call pode aceitar somente um ID e confiar que o modelo tem autorização.
+
+Authorization deve ser server-side.
+
+---
+
+# 51. System of Record
+
+Supabase/PostgreSQL é a fonte oficial para dados estruturados.
+
+Eve session state não é System of Record.
+
+Notion não é System of Record.
+
+Blob/storage binário não é System of Record para estado de negócio.
+
+---
+
+# 52. Observabilidade
+
+OpenTelemetry deve correlacionar:
+
+```text
+agency_id
+client_workspace_id
+product_id
+campaign_id
+agent_run_id
+artifact_id
+experiment_id
+approval_id
+trace_id
+```
+
+IDs de alta cardinalidade não devem ser usados indiscriminadamente como labels de métricas agregadas.
+
+---
+
+# 53. Audit
+
+Registrar ações como:
+
+- login;
+- membership change;
+- integration connect;
+- approval;
+- publish;
+- send;
+- spend;
+- budget change;
+- pause/resume;
+- Product Context approval;
+- Domain Pack approval;
+- Advisor Profile change.
+
+---
+
+# 54. Requisitos funcionais
 
 | ID | Requisito | Critério de aceite |
-| --- | --- | --- |
-| FR-01 | Gerir Workspaces, membros e papéis | Dois Workspaces não conseguem ler nem alterar recursos um do outro por UI, API ou ferramenta de agente |
-| FR-02 | Cadastrar múltiplos Products por Workspace | Cada Product tem owner, estado e Product Context Pack próprio; um pedido fixa o Product alvo |
-| FR-03 | Versionar Product Context, claims e evidências | Uma versão publicada é imutável; revisão mostra diff e fontes; trabalhos anteriores mantêm a versão usada |
-| FR-04 | Instalar Domain Pack opcional por Product | Ativação, desativação e atualização não alteram outros Products nem reescrevem especialistas genéricos |
-| FR-05 | Produzir DomainAdvisory | O especialista retorna um dos quatro estados, constraints, claims, riscos, fontes e handoff; `APPROVED` significa apenas revisão de domínio passada |
-| FR-06 | Aplicar política de revisão por domínio/Workspace | Domínio sensível ou claim contestado exige advisory e, quando a política pede, tarefa humana antes da etapa seguinte |
-| FR-07 | Planejar Campaign e WorkItems | Campaign fixa Product(s), versões, objetivo, público, oferta, brief, canais, metas e dependências entre trabalhos |
-| FR-08 | Persistir entregáveis e versões no OS | Cada entrega tem tipo, proprietário, fontes, ressalvas, estado, versão e vínculo com Campaign; Notion é opcional |
-| FR-09 | Criar CreativeBrief e CreativeSet | Um brief pode gerar vários outputs independentes; cada variante declara master, hipótese, mudança e canal |
-| FR-10 | Produzir e catalogar assets criativos | Imagem na primeira etapa; depois landing page/book e vídeo/voz. Cada asset registra provider, custo, direitos, Product, Campaign e versão |
-| FR-11 | Revisar criativos | Preview, claims, marca, legibilidade, acessibilidade, canal, licença e likeness são avaliados; verificações que exigem render não passam com texto apenas |
-| FR-12 | Aprovar e executar ações externas | Aprovação registra ator, snapshot/hash, público, destino, horário e custo; retry não duplica envio/publicação |
-| FR-13 | Medir resultados e aprender | Métricas têm origem, janela e versão publicada; variantes podem ser comparadas sem confundir correlação com causalidade |
-| FR-14 | Importar conteúdo Notion | Preview, mapeamento humano, importação idempotente e relatório permitem operar sem Notion depois do corte |
-| FR-15 | Oferecer interface própria | UI tem Product Context, Campaigns, biblioteca, Creative Studio, revisão, aprovações e métricas, preservando chat e sessões Eve |
+|---|---|---|
+| FR-01 | Gerenciar Agency Tenants | Um tenant não acessa dados de outro por UI, API, tool ou integração |
+| FR-02 | Gerenciar múltiplos clientes | Agência cria e administra vários Client Workspaces isolados |
+| FR-03 | Gerenciar memberships por escopo | Usuário pode ter papel na agência e papéis diferentes por cliente |
+| FR-04 | Cadastrar Products/Brands por cliente | Cada produto possui owner e contexto próprio |
+| FR-05 | Configurar Advisor Profile por cliente/produto | Cliente usa especialista de segmento sem alterar agentes genéricos |
+| FR-06 | Versionar Product Context | Versões aprovadas são imutáveis e rastreáveis |
+| FR-07 | Gerenciar Domain Packs | Packs são versionados e associados sem contaminar outros clientes |
+| FR-08 | Criar solicitações de trabalho | Request gera WorkItem/AgentRun rastreável |
+| FR-09 | Acompanhar Agent Runs | UI mostra status, outputs, custo, falhas e approvals |
+| FR-10 | Criar Audience Research | Pesquisa registra fontes e evidências |
+| FR-11 | Criar Segments e Personas | Persona possui version, evidence, confidence e status |
+| FR-12 | Gerenciar Campaigns | Campaign vincula cliente, produto, público, budget, canais e targets |
+| FR-13 | Gerenciar Content Artifacts | Conteúdo é versionado e canônico no OS |
+| FR-14 | Produzir Creative Sets | Brief gera peças e variantes rastreáveis |
+| FR-15 | Produzir imagens | Assets registram provider, custo, direitos e versão |
+| FR-16 | Produzir landing pages/books | Entregas possuem preview, revisão e approval |
+| FR-17 | Produzir vídeo/voz | Fase posterior com providers e cost guardrails |
+| FR-18 | Gerenciar Approval Inbox | Aprovações ficam centralizadas e escopadas |
+| FR-19 | Conectar Meta por cliente | Conta é isolada e credentials não chegam ao modelo |
+| FR-20 | Conectar Google Ads por cliente | Conta e customer IDs ficam escopados |
+| FR-21 | Conectar TikTok Ads por cliente | Conta fica escopada ao Client Workspace |
+| FR-22 | Planejar Paid Media | Agent produz plano sem executar spend automaticamente |
+| FR-23 | Criar Experiments | Hypothesis, arms, metrics e resultados ficam no OS |
+| FR-24 | Importar métricas | Métricas preservam origem e definição |
+| FR-25 | Normalizar métricas | Dashboard compara canais usando definição canônica |
+| FR-26 | Acompanhar publicações | Artifact publicado mantém external ID e performance |
+| FR-27 | Exibir Performance Dashboard | Usuário analisa canal, campanha, audience e creative |
+| FR-28 | Produzir recommendations | Performance Optimizer cria recommendations tipadas |
+| FR-29 | Gerenciar budget recommendations | Mudanças possuem limits, evidence, reason e approval |
+| FR-30 | Aprovar ação externa | Publish/send/spend/delete requer policy válida |
+| FR-31 | Executar ações idempotentes | Retry não duplica ação externa |
+| FR-32 | Dashboard multi-cliente | Agência enxerga visão consolidada apenas dos clientes autorizados |
+| FR-33 | Client Portal | Cliente acessa somente seu Workspace e ações permitidas |
+| FR-34 | Gerenciar integrações | Cada cliente conecta e revoga suas próprias contas |
+| FR-35 | Gerenciar custos | Custos de IA/media generation são atribuídos a cliente/campanha |
+| FR-36 | Auditar ações | Ações críticas podem ser reconstruídas |
+| FR-37 | Operar sem Notion | Fluxos principais funcionam sem Notion |
+| FR-38 | Notion opcional | Import/export é idempotente e não vira dependência |
+| FR-39 | Multi-idioma futuro | Contextos e conteúdos podem evoluir para múltiplos idiomas |
+| FR-40 | Offboarding de cliente | Revogação desconecta integrações e preserva/exporta dados conforme policy |
 
-## Fluxos principais
+---
 
-### Revisão de produto e domínio
+# 55. Requisitos não funcionais
 
-Product owner publica contexto; Domain owner ativa pack quando relevante; Marketing owner cria Campaign. O lead chama o product/domain specialist se pack, política ou risco pedirem. O advisory é registrado. `NEEDS_REVIEW` ou `BLOCKED` gera tarefa para responsável humano e impede o uso do claim contestado. Uma proposta de mudança de pack/contexto entra em revisão, sem mutação automática.
+## Security
+- least privilege;
+- RLS;
+- OAuth tokens server-side;
+- secret redaction;
+- prompt injection controls;
+- audit.
 
-### Produção criativa
+## Reliability
+- idempotency;
+- retries limitados;
+- health checks;
+- fallback;
+- reconciliation.
 
-Posicionamento, copy e guidance aprovados alimentam CreativeBrief. O creative-producer cria especificação ou usa adapter habilitado para gerar assets, registra outputs por formato/variante e executa revisão de qualidade. Um reviewer decide sobre a versão renderizada. Publicação/deploy ocorre somente após autorização específica. Performance fica ligada à variante realmente publicada.
+## Observability
+- OpenTelemetry;
+- trace correlation;
+- AI telemetry;
+- connector telemetry.
 
-### Conteúdo e email
+## Performance
+- UI responsiva;
+- dashboards com caching/aggregation quando necessário;
+- imports assíncronos.
 
-Conteúdo longo permanece com o content marketer, social com o coordenador, SEO com o especialista de busca e email com o agente de inbox/Resend. O OS guarda a peça canônica. Uma newsletter passa por content → email → revisão → autorização de envio. O fluxo não requer página Notion.
+## Scalability
+- múltiplas agências;
+- múltiplos clientes;
+- múltiplas contas de mídia;
+- execução paralela de agents.
 
-## Escopo por entrega
+---
 
-O primeiro incremento operacional cobre Workspace, Product, contexto versionado, Campaign, catálogo de entregáveis, identidade, aprovação e email controlado. O incremento de domínio conecta Product Context/Domain Pack ao advisor com persistência e evals. Creative Studio começa com CreativeBrief, CreativeSet, imagens e variantes sociais; landing page e book vêm após preview/render; vídeo/voz após adapters e controle de custo. A [ordem detalhada](./ROADMAP.md) preserva essas dependências.
+# 56. Requisitos de privacidade
 
-## Fora do escopo inicial
+Dados de clientes devem respeitar:
 
-Agentes distintos por segmento ou por formato de mídia; publicação automática sem policy explícita; execução de paid media e orçamento; interpretação de performance como decisão automática; Notion como sistema de registro; inferência de direitos/licença; garantir conformidade regulatória, entrega na caixa de entrada ou ranking SEO a partir de sinais parciais.
+- minimização;
+- finalidade;
+- retenção;
+- deleção;
+- isolamento;
+- consentimento quando aplicável.
 
-## Requisitos de qualidade e operação
+First-party data usada para Audience Intelligence deve ser governada.
 
-- Isolamento por Workspace em todas as leituras e escritas, inclusive ferramentas Eve e URLs de assets.
-- Versionamento e proveniência suficientes para reconstruir uma decisão ou criativo a partir de fontes, prompts/briefs, modelo/provider, run, revisão e aprovação.
-- Controle de custo por Workspace/Campaign e por geração/variante; budget cap aplicado antes de chamar provider.
-- Idempotência e reconciliação para ações externas; falha de resposta não autoriza repetir envio às cegas.
-- Evals de fidelidade ao produto/domínio, claims, qualidade epistemológica, segurança e handoff; para criativos, aderência ao brief, qualidade visual, copy, canal, acessibilidade e exportação.
-- Contexto mínimo por tarefa, fontes externas tratadas como dados e conflito com fonte aprovada enviado à revisão.
+---
 
-## Métricas de sucesso
+# 57. Métricas de sucesso do produto
 
-Tempo até primeira campanha revisável; proporção de entregas que usam versões corretas de contexto; taxa de aceitação e correção humana de advisory; claims rejeitados e falsos bloqueios; retrabalho evitado; taxa de variantes aprovadas; custo e tempo por asset; cobertura de direitos; falhas de isolamento; ações externas duplicadas; uso de Notion após corte; utilidade do guidance na avaliação dos especialistas seguintes. Métricas de agente não devem ser otimizadas isoladamente do resultado do trabalho.
+## Agência
+- tempo para onboard de cliente;
+- clientes ativos;
+- campanhas gerenciadas;
+- aprovação média;
+- retrabalho;
+- margem operacional;
+- custo agentic.
 
-## Critérios de pronto para uso
+## Cliente
+- campaign performance;
+- CPL;
+- CPA;
+- ROAS;
+- leads;
+- conversions;
+- experiment velocity.
 
-O consultor de domínio só é anunciado como operacional quando Product Context/Domain Pack APIs, permissões, schema de advisory, persistência, versões, rastreio de runs, controles contra prompt injection e evals de isolamento/fidelidade estiverem ativos. O Creative Studio só é anunciado como produtor de assets quando CreativeBrief/Artifact/Asset, storage, provider adapter, custo, versões, review/approval, direitos e evals mínimos estiverem ativos. Os dois subagentes Eve atuais são a estrutura de execução e retornam texto revisável enquanto esses gates não forem cumpridos.
+## Agentic
+- Agent Run success;
+- correction rate;
+- advisory acceptance;
+- creative approval rate;
+- recommendation acceptance;
+- agent cost.
 
-## Questões de produto ainda abertas
+---
 
-Definir provedor de identidade e banco, papéis exatos e autoaprovação, residência/retenção de dados, formato canônico de documento, primeiro Domain Pack piloto, política de packs externos, provider inicial de imagem, limites de custo, critérios para likeness e direitos, e se Notion opcional precisa estar disponível no primeiro lançamento. Essas decisões não alteram a separação entre control plane e execution plane.
+# 58. Learning Loop
+
+```text
+Product Context
++
+Domain Pack
+↓
+Audience Intelligence
+↓
+Segments / Personas
+↓
+Product Marketer
+↓
+Campaign Strategy
+↓
+Content / Creative
+↓
+Paid Media
+↓
+Meta / Google / TikTok
+↓
+Metrics
+↓
+Performance Optimizer
+↓
+Rules + JEV
+↓
+Recommendation
+↓
+Approval / Execution
+↓
+New Evidence
+↓
+Audience Intelligence
+```
+
+---
+
+# 59. Escopo por fases
+
+## Fase 1 — Agency Control Plane
+- Agency Tenant;
+- Client Workspace;
+- RBAC;
+- Supabase Auth/RLS;
+- Product;
+- Product Context;
+- Campaign;
+- Artifact;
+- Approval;
+- basic dashboard.
+
+## Fase 2 — Agent Operations
+- AgentRun;
+- Marketing Lead integration;
+- Product/Domain Advisor;
+- Content;
+- Social;
+- SEO;
+- Email.
+
+## Fase 3 — Creative + Audience
+- Audience Intelligence;
+- Segments;
+- Personas;
+- Creative Studio;
+- image generation;
+- experiments.
+
+## Fase 4 — Paid Media Read/Plan
+- Meta connector;
+- Google Ads connector;
+- TikTok connector;
+- metrics read;
+- account mapping;
+- Paid Media Strategist.
+
+## Fase 5 — Paid Media Controlled Execution
+- campaign/ad creation;
+- publish approval;
+- budget approval;
+- experiment execution.
+
+## Fase 6 — Performance Optimization
+- normalized metrics;
+- Performance Optimizer;
+- recommendations;
+- creative feedback loop.
+
+## Fase 7 — Bounded Automation
+- JEV;
+- deterministic guardrails;
+- limited autoexecution.
+
+---
+
+# 60. Fora do escopo inicial
+
+- auto-spend irrestrito;
+- agente autônomo sem approval;
+- um agente hardcoded por cliente;
+- um agente hardcoded por segmento;
+- um agente separado por canal sem necessidade;
+- white-label completo;
+- billing complexo da plataforma;
+- auto-optimization sem dados suficientes.
+
+---
+
+# 61. Critérios de ready para MVP de agência
+
+O MVP é considerado operacional quando:
+
+- multi-tenancy entre Agency Tenants passa testes;
+- Client Workspace isolation passa testes;
+- roles funcionam;
+- Product Context funciona;
+- Campaign funciona;
+- Requests/AgentRuns funcionam;
+- Artifact/Approval funciona;
+- dashboard agência/cliente existe;
+- ao menos uma integração externa funciona de ponta a ponta;
+- OTel está ativo;
+- audit log está ativo;
+- Eve opera usando contexto do cliente sem misturar tenants.
+
+---
+
+# 62. Critérios de ready para Paid Media
+
+Antes de habilitar ações reais:
+
+- connector auth seguro;
+- account mapping;
+- approval policy;
+- audit;
+- idempotency;
+- metrics freshness;
+- budget policy;
+- rollback/reconciliation;
+- test account/sandbox validado.
+
+---
+
+# 63. Critérios de ready para auto-optimization
+
+Só depois de:
+
+- histórico suficiente;
+- guardrails definidos;
+- evals;
+- confidence calibration;
+- human override;
+- rollback;
+- audit;
+- approval explícito da agência/cliente.
+
+---
+
+# 64. Questões abertas
+
+1. O top-level será chamado Agency ou Organization no modelo técnico?
+2. A plataforma atenderá apenas agências no MVP ou também marcas diretas?
+3. Client Portal entra no MVP?
+4. Quais roles exatos serão necessárias?
+5. Qual storage de assets será escolhido?
+6. Qual provider de imagem será inicial?
+7. Qual provider de vídeo será inicial?
+8. Qual modelo de atribuição será MVP?
+9. Qual canal de Paid Media será integrado primeiro?
+10. Client Advisor será configurado por Client ou por Product?
+11. Quais Domain Packs estarão disponíveis no piloto?
+12. Como first-party data entrará no Audience Intelligence?
+13. Qual policy de retenção por cliente?
+14. Qual política de autoapproval?
+15. Qual limite de budget change no futuro?
+
+---
+
+# 65. Resultado esperado
+
+O Marketing Management OS deve permitir que uma agência opere:
+
+```text
+MANY CLIENTS
++
+MANY PRODUCTS
++
+MANY CAMPAIGNS
++
+MANY CHANNEL ACCOUNTS
++
+MANY AGENT RUNS
+```
+
+com isolamento, contexto e rastreabilidade.
+
+O sistema final não é apenas um time de agentes.
+
+É:
+
+```text
+A MULTI-TENANT MARKETING OPERATING SYSTEM
+FOR AGENCIES
+WITH
+AGENTIC EXECUTION
++
+CREATIVE PRODUCTION
++
+PAID MEDIA
++
+PERFORMANCE MANAGEMENT
++
+CONTINUOUS LEARNING
+```

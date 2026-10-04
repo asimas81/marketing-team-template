@@ -60,3 +60,20 @@ Workspace guarda identidade organizacional e políticas comuns; Product guarda f
 ## Regras de armazenamento e acesso
 
 Todas as tabelas de negócio carregam `workspace_id` diretamente ou o obtêm por uma relação verificada; índices e FKs compostas evitam vínculo entre Workspaces. Product Context, Brief e Deliverable usam versões imutáveis e `content_hash`. Assets carregam dono e escopo no banco; a chave Blob não é prova de permissão. Exclusão operacional prefere arquivamento e retenção; deleção permanente, quando necessária, segue política de dados com auditoria.
+
+## Extensão v2: Agency e Client
+
+O `Workspace` legado acima torna-se `ClientWorkspace`; os contratos novos usam `client_workspace_id` e incluem `agency_id`. `AgencyTenant(id, status, owner, policy_version)` possui Clients e `AgencyMembership(user_id, agency_id, role, status)`. `ClientWorkspace(id, agency_id, status, owner)` possui `ClientWorkspaceMembership(user_id, agency_id, client_workspace_id, role, status)`, `ClientPolicy(version, rules, effective_at)`, `AdvisorProfile(version, product_id?, refs, agent_binding)`, `ClientIntegration(provider, credential_ref, health)` e `ExternalAccount(platform, external_account_id, permissions)`. Toda entidade operacional está sob um Client, com FK composta que impede referência cruzada. Produto/brand e campanhas multproduto permanecem dentro de um único Client. Domain Pack reutilizável pode ser privado da Agency ou do Client; instalação/binding e acesso exigem ambos os escopos.
+
+| Núcleo adicional | Relação e invariantes |
+| --- | --- |
+| WorkRequest e AgentRun/Event | Request pertence ao Client e pode gerar Run; Run é persistido antes de chamar Eve e fixa policy/context/profile/brief, principal, custo e status |
+| AudienceResearch/Source, AudienceSegment/Version, Persona/Version/Evidence | Pertencem ao Client/Product; Segment é critério objetivo, Persona é interpretação com evidência e revisão |
+| TargetingHypothesis, MarketingHypothesis, AudienceExperiment | Versão e fontes vinculadas a Product/Campaign; inferência não vira fato automaticamente |
+| Experiment/Arm/Metric/Observation/Decision | Pertencem ao Client/Campaign; braço fixa Artifact/Audience/Offer, métrica tem definição e janela |
+| Publication/ExternalAction e mappings | Versão publicada, destino, ExternalAccount, aprovação, idempotência e estado reconciliado têm o mesmo Client owner |
+| CampaignMetricDefinition/ChannelMetricMapping/MetricSnapshot/AttributionSnapshot/PerformanceTarget | Preservam valor nativo, normalizado, definição, fonte, janela e freshness |
+| PerformanceRecommendation e BudgetPolicy | Recomendação é proposta; policy determinística limita custo/spend e mudança exige aprovação |
+| Report/CostRecord/AuditEvent | Relatório é snapshot autorizado; custo aloca Agency/Client/Product/Campaign/Run; auditoria registra ator e escopo |
+
+Supabase Auth identifica o principal; RLS em tabelas expostas e API validam Agency e Client, com testes allow/deny. Chaves externas compostas e checagens de ownership também cobrem Product, Campaign, AgentRun, Approval, Asset e ExternalAccount. Agregados da Agency filtram Client por membership antes de comparar métricas. O [modelo de Client](./CLIENT_WORKSPACE_MODEL.md) detalha ciclo de vida e o [modelo de integrações](./CLIENT_INTEGRATION_MODEL.md) detalha credenciais e contas.

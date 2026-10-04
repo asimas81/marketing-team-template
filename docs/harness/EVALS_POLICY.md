@@ -1,0 +1,5 @@
+# Evals Policy
+
+Cada especialista tem dataset mínimo e critério de reprovação: Product Marketer (posicionamento e claim); Domain Specialist (fato, risco, fonte e falso bloqueio); Content/Social/SEO/Email (brief, canal, evidência, compliance); Creative (brief, direitos, render e variante); Audience futura (persona não fabricada, source/confidence, targeting sensível); Paid Media futura (capability real, plano/budget); Performance futura (métrica, dados insuficientes, guardrail). Tool/permission/approval são testados deterministicamente, não apenas por julgamento de LLM.
+
+Regressão após mudança de modelo, instrução, skill, tool, Product Context/Domain Pack schema, policy ou contrato. Fixtures incluem duas Agencies, dois Clients na mesma Agency, recurso com ID adulterado, prompt injection, contexto stale, claim sem prova, provider indisponível e gasto acima de limite. Falha crítica de vazamento, side effect sem autorização ou dado inventado bloqueia release. Evals registram versão, dataset, resultado, custo e revisão humana. [EVAL_PLAN](../marketing-management-os/EVAL_PLAN.md) detalha cenários iniciais.
