@@ -2,7 +2,7 @@
 
 ## Decisão arquitetural
 
-Evoluir o app Next.js existente para o plano de controle e a interface do Marketing Management OS. Usar um banco relacional transacional, recomendado PostgreSQL, como system of record para Workspaces, Products, versões de contexto, campanhas, entregáveis, decisões e auditoria. Manter Vercel Blob para binários e documentos grandes, Eve para sessões e execução de agentes, Resend para operação de email e Notion como integração opcional de importação/exportação. A escolha do provedor PostgreSQL fica para a implementação; a decisão essencial é ter transações, chaves estrangeiras e isolamento por Workspace.
+Evoluir o app Next.js existente para o plano de controle e a interface do Marketing Management OS. Usar Supabase PostgreSQL como system of record alvo para Agency Tenants, Client Workspaces, Products, versões de contexto, campanhas, entregáveis, decisões e auditoria; Supabase Auth fornece identidade e RLS reforça o isolamento. Eve mantém sessões e execução de agentes; Resend opera email e Notion é importação/exportação opcional. Binários ficam em object storage privado, com escolha entre Vercel Blob e Supabase Storage ainda aberta.
 
 ```text
 Browser / Slack / TUI
@@ -58,3 +58,17 @@ O estado atual desta transição contém os dois novos subagentes e suas skills.
 - Resiliência: criação interna e envio externo são etapas distintas; idempotency key evita disparos duplicados após retry; estado `reconciliation_required` cobre resposta incerta.
 - Segurança: RBAC no servidor, isolamento por Workspace, URL assinada para Blob, allow list de conexões, confirmação do público e proteção contra instruções em material importado.
 - Portabilidade: trocar Notion não altera entidades centrais; trocar provedor de email exige adaptador de execução, não reescrever Campaign.
+
+## Atualização v2: agência e cliente
+
+A hierarquia alvo é `Platform → AgencyTenant → ClientWorkspace → Product/Brand → Campaign`. Nos parágrafos legados acima, `Workspace` designa o novo `ClientWorkspace`, não a Agency. O Control Plane valida ambos os escopos em UI, API, ferramentas, storage e conectores. AgencyMembership governa administração da agência; ClientWorkspaceMembership e grants explícitos governam operação do cliente. ClientPolicy restringe AgencyPolicy. O [modelo de tenancy](./AGENCY_MULTI_TENANCY.md) e a [matriz RBAC](./TENANT_RBAC_MATRIX.md) definem os invariantes.
+
+O app passa a oferecer Agency Dashboard, Client Dashboard e Client Portal, além de Requests, Agent Runs, Campaign Management, Content, Creative Studio, Audiences, Experiments, Paid Media, Performance, Approval Inbox, Publications, Integrations e Reports. A [arquitetura da informação](./AGENCY_UI_INFORMATION_ARCHITECTURE.md) fixa as duas perspectivas. Analytics cross-client agrega em SQL somente clientes autorizados; Eve interpreta o agregado. Cada AgentRun usa um Client por execução e snapshot versionado de Product Context, Domain Pack, Advisor Profile e ClientPolicy. O Advisor Profile por Client/Product parametriza o mesmo `product-domain-specialist`; Remote Agent específico é opção futura.
+
+O ciclo `Audience → Campaign/Creative → Experiment/Paid Media → Metrics normalizadas → Performance → Recommendation → Approval/Execution → Evidence` pertence ao Control Plane. Meta, Google e TikTok começam como conectores escopados ao Client; Paid Media Strategist e Performance Optimizer são especialistas futuros, sem autoridade de gasto. Regras de budget são determinísticas e aprovação humana é padrão. Instrumentação OpenTelemetry correlaciona API, Eve, AI Gateway e integrações, sem segredos ou labels de tenant de alta cardinalidade. As dependências e gates constam do [roadmap](./ROADMAP.md).
+
+## Reconciliação 2.1: Engagement e superfície principal
+
+A Web UI é a superfície principal de operação Agency, Client e Portal; chat/Marketing Lead é utilidade contextual. O [Design System](../harness/MARKETING_OS_DESIGN_SYSTEM.md) governa UX/UI e a [Prototype Inspiration](../harness/MARKETING_OS_PROTOTYPE_INSPIRATION.md) orienta protótipos. A [Engagement Architecture](./ENGAGEMENT_ARCHITECTURE.md) adiciona uma camada funcional acima de adapters por canal (`EMAIL`, `WHATSAPP`, `SMS`, `INSTAGRAM_DM`, `FACEBOOK_MESSENGER`, `WEB_CHAT`). Email é o primeiro canal planejado; os demais são roadmap. `EngagementCampaign`, Segment, Sequence, Template, Event e métricas ficam no Control Plane, com provider IDs reconciliados. A [Agentic Email Spec](./AGENTIC_EMAIL_MARKETING_SPEC.md) descreve a primeira experiência; Resend/Brevo são adapters potenciais, não fontes de verdade.
+
+A futura [Lead Qualification](./LEAD_QUALIFICATION_MODEL.md) acrescenta Lead, identidade, origem, qualificação, conversa, consentimento e handoff no escopo de um Client. O OS adquire, engaja, qualifica, mede e otimiza; CRM externo assume opportunity, pipeline, sales e customer lifecycle. O Lead Qualification Agent futuro recebe contexto mínimo e propõe avaliações; só API/policy do OS autoriza handoff. Contratos, controles de envio e observabilidade executável ficam no [Harness](../harness/README.md). Nenhum conector futuro é considerado disponível por constar deste desenho.

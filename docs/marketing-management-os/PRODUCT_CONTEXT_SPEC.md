@@ -37,3 +37,7 @@ Editar cria draft baseado na versão ativa. O diff mostra mudanças em fatos, p�
 ## Relação com os dados atuais
 
 As seis seções do brand context existente mapeiam para identidade, público, posicionamento, mensagens, voz e questões abertas. Elas são ponto de partida de importação, não prova de que um documento global pertença a todos os Products. Preferências por usuário permanecem separadas.
+
+## Escopo v2
+
+O envelope novo inclui `agency_id` e `client_workspace_id`; o `workspace_id` legado acima designa Client Workspace. Product pertence a exatamente um Client e sua versão de contexto não pode ser reutilizada implicitamente por Product de outro Client, mesmo quando há Domain Pack compartilhado. Brand pode agrupar Products dentro do mesmo Client, mas fatos, preço e claims continuam por Product. Publicação exige papel autorizado naquele Client e registra a versão de ClientPolicy. Advisor Profile pode selecionar fontes e revisão, mas não altera o contexto publicado. Migração do brand context global exige mapeamento humano por Agency, Client e Product.

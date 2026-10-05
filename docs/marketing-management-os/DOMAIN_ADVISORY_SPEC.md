@@ -35,3 +35,7 @@ Correção de Product Context ou Domain Pack é proposta com campo, valor atual,
 ## Avaliação mínima
 
 Casos: SaaS genérico sem pack não inventa regra vertical; produto financeiro usa pack obrigatório e pede evidência para claim; Product Context insuficiente resulta em `NEEDS_REVIEW`; Campaign que contradiz contexto aprovado resulta em revisão/bloqueio justificado; pesquisa pública conflitante é registrada sem sobrescrever contexto. Regressões medem fidelidade ao Product, domínio, claims, classificação epistemológica, isolamento, prompt injection, qualidade do handoff e falsos bloqueios. O [plano de evals](./EVAL_PLAN.md) define gates comuns.
+
+## Advisor por Client v2
+
+O `workspace_id` legado torna-se `client_workspace_id`, acompanhado de `agency_id`. O OS resolve Advisor Profile efetivo por Client/Product e fornece suas versões de Domain Pack, fontes e policies; o subagente continua o mesmo entre clientes. O parecer e as propostas carregam os dois IDs de tenancy e não podem citar fonte privada de outro Client. Se o perfil for obrigatório e estiver ausente, desatualizado ou sem fonte suficiente, o estado é `NEEDS_REVIEW` e o fluxo dependente aguarda owner humano. Remote Advisor futuro usa o mesmo contrato e limites.

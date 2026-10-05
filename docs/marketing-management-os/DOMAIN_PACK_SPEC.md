@@ -32,3 +32,7 @@ Estados `draft`, `verified`, `active`, `deprecated`, `disabled`. Atualização n
 ## Critérios de aceitação
 
 O mesmo pedido sobre dois Products de segmentos distintos produz briefings com pareceres diferentes quando seus packs diferem. Desativar o pack devolve o comportamento genérico sem mudar os outros especialistas. Parecer sem fonte ou fora do escopo informa incerteza; não injeta um claim em copy final. Todo resultado carrega `pack_id/version` e é reproduzível a partir dos snapshots usados.
+
+## Visibilidade v2
+
+O catálogo pode conter packs privados da plataforma, Agency ou Client, mas instalação é sempre explícita no Client Workspace e binding explícito no Product. Compartilhar um pack entre Clients compartilha apenas a versão licenciada do conhecimento reutilizável, nunca Product Context, fontes privadas, Advisor Profile ou advisories. `agency_id`/`client_workspace_id` acompanham instalação e binding; policy de Client decide revisão obrigatória. O Advisor Profile fixa as versões selecionadas para o `product-domain-specialist`. Packs privados de outro Client são invisíveis mesmo para usuário de mesma Agency sem autorização. A mudança de pack cria nova versão/ativação e sinaliza campanhas afetadas, sem alterar trabalhos antigos.

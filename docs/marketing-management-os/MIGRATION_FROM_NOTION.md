@@ -36,3 +36,7 @@ Durante a janela, definir uma origem de escrita por tipo de objeto; evitar ediç
 ## Critério de conclusão
 
 Um usuário consegue cadastrar Product, aprovar Product Context, planejar Campaign, gerar e revisar uma peça longa, abrir seu link interno e seguir para email sem conexão Notion. Relatório de importação indica cobertura e pendências; desligar Notion não quebra tarefas novas.
+
+## Migração multi-tenant v2
+
+O inventário passa a ser feito por `(agency_id, client_workspace_id)` e principal autorizado. Antes de importar, o operador mapeia cada página a Client e Product ou marca `unmapped`; uma página Notion compartilhada entre clientes não é copiada para ambos sem revisão explícita de propriedade e permissão. Chave idempotente inclui Agency, Client, Notion page ID e source revision. Anexos, referências e relatórios de falha herdam o mesmo owner. A migração não reutiliza tokens OAuth de um Client para outro e não converte aprovação do Notion em ApprovalDecision do OS. O corte de escrita e rollback são independentes por Client, com verificação de que portal, Campaign e AgentRun funcionam sem Notion.

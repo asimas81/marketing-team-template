@@ -2,6 +2,8 @@
 
 Este diretório descreve o produto alvo. [PRD](./PRD.md) é a entrada para escopo, requisitos e critérios de aceite. Os documentos de arquitetura e contratos detalham como entregar as capacidades. O código atual contém o lead Eve, sete subagentes e o app de chat; o Marketing OS como system of record e o Creative Studio de geração ainda são alvo de implementação.
 
+O posicionamento canônico é **Agentic Marketing Operations Platform for Agencies**. [ARCHITECTURE](./ARCHITECTURE.md) é o mapa funcional canônico. As últimas decisões e a ordem de produto vêm do [Product Update Plan](../harness/MARKETING_OS_PRODUCT_UPDATE_PLAN.md); o [Design System](../harness/MARKETING_OS_DESIGN_SYSTEM.md) é a referência canônica de UX/UI; [Prototype Inspiration](../harness/MARKETING_OS_PROTOTYPE_INSPIRATION.md) é a referência oficial de prototipação. Esses três arquivos permanecem em `docs/harness/` como fontes de decisão, sem cópias neste diretório. Aqui ficam produto, domínio e especificações de negócio; policies, contratos, segurança, observabilidade, execução, contexto e governança ficam no [Harness](../harness/README.md).
+
 | Artefato | Decisão que sustenta |
 | --- | --- |
 | [AS-IS](./AS-IS.md) | Baseline anterior aos dois novos subagentes e lacunas da aplicação |
@@ -18,5 +20,21 @@ Este diretório descreve o produto alvo. [PRD](./PRD.md) é a entrada para escop
 | [EVAL_PLAN](./EVAL_PLAN.md) | Cenários de fidelidade, segurança e qualidade |
 | [MIGRATION_FROM_NOTION](./MIGRATION_FROM_NOTION.md) | Importação e corte da dependência operacional |
 | [ROADMAP](./ROADMAP.md) | Ordem de implementação e gates de saída |
+| [ENGAGEMENT_ARCHITECTURE](./ENGAGEMENT_ARCHITECTURE.md) | Abstração de seis canais, Email primeiro e evolução gradual |
+| [AGENTIC_EMAIL_MARKETING_SPEC](./AGENTIC_EMAIL_MARKETING_SPEC.md) | Campanhas, broadcasts, sequences, aprovação, medição e aprendizado |
+| [LEAD_QUALIFICATION_MODEL](./LEAD_QUALIFICATION_MODEL.md) | Modelo futuro de Lead, qualificação e handoff para CRM externo |
 
 Os contratos aqui são propostas para revisão. IDs, estados e campos canônicos devem ser fechados antes de criar APIs persistentes; os subagentes Eve atuais não devem ser usados como prova de que essas APIs já existem.
+
+## Atualização v2 — agência multi-tenant
+
+O [PRD v2](./PRD.md) introduz `AgencyTenant → ClientWorkspace → Product/Brand → Campaign`. Documentos legados usam `Workspace` para a unidade que agora se chama `ClientWorkspace`; as extensões v2 de cada contrato são a referência para novas SPECs. [PRD_ARCHITECTURE_GAP_ANALYSIS](./PRD_ARCHITECTURE_GAP_ANALYSIS.md) compara o PRD com o baseline e [HARNESS_READINESS_REPORT](./HARNESS_READINESS_REPORT.md) distingue prontidão documental de produto operacional.
+
+| Grupo | Artefatos v2 |
+| --- | --- |
+| Tenancy e papéis | [Agency Multi-Tenancy](./AGENCY_MULTI_TENANCY.md), [Client Workspace](./CLIENT_WORKSPACE_MODEL.md), [RBAC Matrix](./TENANT_RBAC_MATRIX.md), [Offboarding](./CLIENT_OFFBOARDING_MODEL.md) |
+| Advisor e integrações | [Client Advisor Profile](./CLIENT_ADVISOR_PROFILE_SPEC.md), [Client Integration](./CLIENT_INTEGRATION_MODEL.md), [Integration Model](./INTEGRATION_MODEL.md), [Channel Connectors](./CHANNEL_CONNECTORS_SPEC.md) |
+| UI | [Agency UI Information Architecture](./AGENCY_UI_INFORMATION_ARCHITECTURE.md), [Client Portal](./CLIENT_PORTAL_MODEL.md) |
+| Growth loop | [Audience Intelligence](./AUDIENCE_INTELLIGENCE_SPEC.md), [Experimentation](./EXPERIMENTATION_MODEL.md), [Paid Media](./PAID_MEDIA_ARCHITECTURE.md), [Performance](./PERFORMANCE_OPTIMIZATION_MODEL.md), [Learning Loop](./MARKETING_LEARNING_LOOP.md) |
+
+Os arquivos [AGENCY_MULTI_TENANT_ARCHITECTURE_UPDATE](./AGENCY_MULTI_TENANT_ARCHITECTURE_UPDATE.md), [HARNESS_ENGINEERING_MARKETING_MANAGEMENT_OS](./HARNESS_ENGINEERING_MARKETING_MANAGEMENT_OS.md) e [REPOSITORY_UPDATE_INSTRUCTIONS](./REPOSITORY_UPDATE_INSTRUCTIONS.md) são entradas de referência. A implementação continua pendente; o app existente permanece um chat com Eve e sete especialistas.
