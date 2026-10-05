@@ -34,6 +34,10 @@ Preservar a normalização de `build_tracked_link`, agora derivando `utm_campaig
 
 Lista e detalhe de campanhas, editor do brief, quadro de WorkItems/dependências, biblioteca de Deliverables com versões e diff, espaço de criativos com CreativeBrief, Sets e variantes, fila de aprovação e painel de resultados com origem de cada métrica. Chat aparece no contexto de uma Campaign/Product, mantendo sessão Eve associada aos IDs para retomada coerente.
 
+## Engagement na Campaign
+
+A Campaign principal coordena também Engagement. `EngagementCampaign` referencia a Campaign, Product, objetivo e Segment versionado do mesmo Client; pode conter `EmailBroadcast` e `EmailSequence` como entregas operacionais distintas. Cada mensagem fixa Template/Artifact/versão, audiência elegível, canal `EMAIL`, identidade de envio, experimento quando houver e métrica primária. A cadeia `Audience → Goal → Strategy → Content/Creative → Sequence → Approval → Resend/Brevo → Metrics → Performance → Learning` não altera o estado da Campaign para autorizar `SEND`: aprovação executável é específica por público, payload, provedor e horário. Eventos e métricas de Engagement voltam à Campaign com fonte, janela e reconciliação. Os demais canais da [Engagement Architecture](./ENGAGEMENT_ARCHITECTURE.md) e Lead Qualification permanecem futuros.
+
 ## Campanha v2: cliente, audiência e mídia
 
 Campaign pertence a `(agency_id, client_workspace_id)` e todos os Products participantes, Briefs, WorkItems, Artifacts, AgentRuns, approvals e contas externas devem ter o mesmo owner. O `workspace_id` legado nesta spec significa Client Workspace. Campaign fixa `audience_segment_version_id` e `persona_version_id` quando usados, e distingue hipótese de público de targeting efetivamente aplicado. `WorkRequest` cria a demanda e pode gerar AgentRun antes de qualquer delegação Eve. O Dashboard de Campaign expõe orçamento planejado, gasto observado, targets, canais, Publications, Experiments, estado de integrações e recomendação de Performance.

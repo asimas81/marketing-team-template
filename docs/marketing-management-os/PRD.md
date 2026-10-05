@@ -1,7 +1,7 @@
 # PRD — Marketing Management OS
 ## Agência Multi-Tenant com Times Agentic de Marketing
 
-**Versão:** 2.0  
+**Versão:** 2.1
 **Status:** proposta consolidada para revisão de produto e arquitetura  
 **Produto:** Marketing Management OS  
 **Modelo operacional primário:** agência gerenciando múltiplos clientes  
@@ -9,18 +9,21 @@
 **Control Plane:** Marketing Management OS  
 **Execution Plane:** Marketing Agents / Eve  
 **Infraestrutura alvo:** Vercel + Supabase + Eve + OpenTelemetry
+**Posicionamento canônico:** Agentic Marketing Operations Platform for Agencies
+
+As decisões recentes de escopo e prioridade vêm do [Product Update Plan](../harness/MARKETING_OS_PRODUCT_UPDATE_PLAN.md). O [Design System](../harness/MARKETING_OS_DESIGN_SYSTEM.md) é a referência canônica de UX/UI e a [Prototype Inspiration](../harness/MARKETING_OS_PROTOTYPE_INSPIRATION.md) é a referência oficial de prototipação, sem copiar concorrentes. Esta versão do PRD reconcilia essas fontes com a arquitetura funcional; políticas e contratos de execução permanecem em `docs/harness/`.
 
 ---
 
 # 1. Resumo executivo
 
-O Marketing Management OS é uma aplicação Web para operar uma agência de marketing assistida por agentes de IA.
+O Marketing Management OS é uma **Agentic Marketing Operations Platform for Agencies** com aplicação Web para operar uma agência de marketing assistida por agentes de IA.
 
 A plataforma deve permitir que uma agência:
 
 - gerencie múltiplos clientes de forma isolada;
 - mantenha produtos, marcas, contextos e regras específicas por cliente;
-- conecte contas de Meta, Google, TikTok, email, analytics e outras integrações por cliente;
+- conecte progressivamente contas de email, Meta, Google, TikTok, analytics e outras integrações por cliente;
 - receba solicitações de trabalho;
 - orquestre agentes especializados por meio do Eve;
 - produza estratégia, conteúdo, criativos, landing pages, books, vídeos e outros ativos;
@@ -31,9 +34,7 @@ A plataforma deve permitir que uma agência:
 - gerencie verba com guardrails determinísticos e aprovação;
 - mantenha um ciclo contínuo de pesquisa, criação, execução, medição e aprendizado.
 
-A interface Web é o produto principal.
-
-O chat com o Marketing Lead é apenas uma das formas de operar o sistema.
+A interface Web é o produto principal. O chat com o Marketing Lead é uma utility surface contextual, como drawer, command palette ou assistência dentro de Client/Campaign, e não a homepage.
 
 ---
 
@@ -93,7 +94,7 @@ WORK / ARTIFACTS / EXPERIMENTS / PUBLICATIONS
 METRICS / LEARNING / OPTIMIZATION
 ```
 
-O Marketing OS é o Control Plane e System of Record.
+O Marketing OS é o Control Plane e System of Record para operações de marketing. O ciclo de produto é `research → plan → create → review → publish/execute → measure → optimize → learn`. O OS cobre aquisição, engajamento, qualificação futura, medição e otimização; opportunity, pipeline, sales e customer lifecycle pertencem a CRMs externos. A [arquitetura canônica](./ARCHITECTURE.md) e o [modelo de Lead Qualification](./LEAD_QUALIFICATION_MODEL.md) fixam essa fronteira.
 
 O Eve é o Execution Plane.
 
@@ -122,7 +123,7 @@ e QUAL especialista deve atuar
 9. Personas devem ser baseadas em evidência.
 10. Produção e publicação são etapas diferentes.
 11. Revisão editorial e autorização de execução são decisões diferentes.
-12. Publicar, enviar, gastar e excluir exigem policy explícita.
+12. Publicar, enviar, gastar e excluir exigem policy explícita; consentimento, opt-out e supressão são pré-condições de envio.
 13. Toda alteração financeira deve ser auditável.
 14. Toda saída relevante deve ser versionada e rastreável.
 15. Performance deve retroalimentar audiência, criativo, estratégia e experimentação.
@@ -439,7 +440,7 @@ Reports
 Settings
 ```
 
-Dentro de cada Client Workspace a interface muda para o contexto daquele cliente.
+Dentro de cada Client Workspace a interface muda para o contexto daquele cliente e inclui **Engagement**. As perspectivas Agency, Client e Portal seguem a [arquitetura da informação](./AGENCY_UI_INFORMATION_ARCHITECTURE.md); o [Design System](../harness/MARKETING_OS_DESIGN_SYSTEM.md) governa navegação, estados e acessibilidade.
 
 ---
 
@@ -704,7 +705,8 @@ Deve possuir:
 - experiments;
 - metrics;
 - approvals;
-- publications.
+- publications;
+- engagement campaigns, broadcasts e sequences quando Email estiver habilitado.
 
 ---
 
@@ -930,7 +932,15 @@ Integrations
 └── outras
 ```
 
-A conexão deve pertencer ao Client Workspace.
+A conexão deve pertencer ao Client Workspace. A lista é arquitetura alvo: CRM connectors são futuros; Resend/Brevo exigem adaptação para o OS e não estão operacionais no Control Plane atual.
+
+## Atualização 2.1 — Engagement e Agentic Email
+
+A área Engagement abstrai `EMAIL`, `WHATSAPP`, `SMS`, `INSTAGRAM_DM`, `FACEBOOK_MESSENGER` e `WEB_CHAT`. Apenas Email é o primeiro canal planejado; os demais permanecem em roadmap e só aparecem como operáveis após integração, identidade, consentimento e policy próprios. A [Engagement Architecture](./ENGAGEMENT_ARCHITECTURE.md) define o modelo funcional, e a [Agentic Email Marketing Spec](./AGENTIC_EMAIL_MARKETING_SPEC.md) define a primeira entrega.
+
+Agentic Email deve oferecer campaigns, broadcasts, sequences, segments, templates, experiments, automations delimitadas, performance e AI recommendations. O fluxo canônico é `Audience → Campaign Goal → Email Strategy → Content / Creative → Sequence → Approval → Resend / Brevo → Metrics → Performance → Learning`. O agente `email` atual é uma base de adaptação de copy e operação Resend; a área completa do OS ainda é alvo. Preparar, agendar e enviar são decisões distintas, com consentimento por canal, supressão e aprovação do payload exato antes de `SEND` real.
+
+Lead Qualification é roadmap e prepara `Lead`, `LeadIdentity`, `LeadSource`, `LeadQualification`, `ConversationThread`, `EngagementEvent`, `Consent` e `Handoff`. Um Lead Qualification Agent futuro propõe avaliações com contexto mínimo; o OS governa a decisão e entrega dados autorizados a CRM externo. Conectores futuros: HighLevel, HubSpot, RD Station, Pipedrive e Salesforce. O OS não inclui pipeline de vendas nem ciclo de vida comercial como fonte de verdade. A [Lead Qualification Model](./LEAD_QUALIFICATION_MODEL.md) detalha essa fronteira.
 
 ---
 
@@ -1196,19 +1206,19 @@ Só pode existir quando:
 
 # 45. Client Portal
 
-A aplicação deve permitir oferecer um portal ao cliente.
+Client Portal is part of the MVP. A aplicação oferece ao cliente uma superfície do mesmo Control Plane, limitada ao seu Client Workspace.
 
-Capabilities configuráveis:
+O escopo inicial inclui:
 
-- visualizar campanhas;
-- visualizar criativos;
-- comentar;
-- aprovar;
-- ver resultados;
-- baixar relatórios;
-- acompanhar histórico.
+- Overview;
+- Campaigns;
+- Creatives;
+- Approvals;
+- Performance;
+- Reports;
+- Requests.
 
-O cliente não deve ver informações de outros clientes da agência.
+Nessas áreas, o cliente pode consultar entregas e resultados compartilhados, comentar, solicitar mudanças e decidir aprovações conforme seu papel. O portal não expõe configuração interna de agentes, custos internos da agência, cross-client analytics, configurações técnicas internas, administração avançada de integrações nem informações de outros clientes.
 
 ---
 
@@ -1267,6 +1277,8 @@ Segunda wave:
 ├── Paid Media Strategist
 └── Performance Optimizer
 ```
+
+Disponibilidade atual do repositório: Marketing Lead e sete especialistas Eve, incluindo os cinco originais, Product & Domain Specialist e Creative Producer. Audience Intelligence, Paid Media Strategist, Performance Optimizer e Lead Qualification Agent são planejados; o diagrama acima representa composição alvo, não agentes já instalados.
 
 ---
 
@@ -1397,7 +1409,7 @@ Registrar ações como:
 | FR-30 | Aprovar ação externa | Publish/send/spend/delete requer policy válida |
 | FR-31 | Executar ações idempotentes | Retry não duplica ação externa |
 | FR-32 | Dashboard multi-cliente | Agência enxerga visão consolidada apenas dos clientes autorizados |
-| FR-33 | Client Portal | Cliente acessa somente seu Workspace e ações permitidas |
+| FR-33 | Client Portal no MVP | Cliente acessa Overview, Campaigns, Creatives, Approvals, Performance, Reports e Requests somente em seu Workspace; dados internos da agência e de outros clientes ficam ocultos |
 | FR-34 | Gerenciar integrações | Cada cliente conecta e revoga suas próprias contas |
 | FR-35 | Gerenciar custos | Custos de IA/media generation são atribuídos a cliente/campanha |
 | FR-36 | Auditar ações | Ações críticas podem ser reconstruídas |
@@ -1405,6 +1417,11 @@ Registrar ações como:
 | FR-38 | Notion opcional | Import/export é idempotente e não vira dependência |
 | FR-39 | Multi-idioma futuro | Contextos e conteúdos podem evoluir para múltiplos idiomas |
 | FR-40 | Offboarding de cliente | Revogação desconecta integrações e preserva/exporta dados conforme policy |
+| FR-41 | Oferecer Engagement por canal | Os seis tipos de canal são modelados; apenas capacidades de integrações efetivamente habilitadas aparecem como operáveis |
+| FR-42 | Operar Agentic Email | Campaigns, broadcasts, sequences, segments, templates, experiments, automations delimitadas, performance e AI recommendations vinculam versões ao Client |
+| FR-43 | Autorizar envio real | Consentimento, supressão, audience/payload snapshot, role, policy e idempotência são verificados antes do envio; retry incerto não duplica disparo |
+| FR-44 | Preparar Lead Qualification futura | Lead, identidade, origem, qualificação, conversa, evento, consentimento e handoff têm ownership por Client; CRM retém pipeline e vendas |
+| FR-45 | Operar Web UI como superfície principal | Agency, Client e Portal suportam fluxo diário; Marketing Lead é contextual, sem chat como homepage |
 
 ---
 
@@ -1529,6 +1546,8 @@ Audience Intelligence
 
 # 59. Escopo por fases
 
+As fases abaixo registram a decomposição anterior. A sequência vigente de produto é o [Roadmap](./ROADMAP.md), reconciliado com o [Product Update Plan](../harness/MARKETING_OS_PRODUCT_UPDATE_PLAN.md): Client Portal is part of the MVP; métricas básicas entram cedo; Engagement Email sucede o core e integra o MVP; WhatsApp, Lead Qualification e CRM são ondas futuras.
+
 ## Fase 1 — Agency Control Plane
 - Agency Tenant;
 - Client Workspace;
@@ -1595,6 +1614,9 @@ Audience Intelligence
 - white-label completo;
 - billing complexo da plataforma;
 - auto-optimization sem dados suficientes.
+- CRM completo, pipeline de vendas e telephony suite;
+- inbox omnichannel amplo e chatbot builder genérico;
+- WhatsApp, SMS, Instagram DM, Facebook Messenger e Web Chat operacionais no primeiro release.
 
 ---
 
@@ -1614,6 +1636,8 @@ O MVP é considerado operacional quando:
 - OTel está ativo;
 - audit log está ativo;
 - Eve opera usando contexto do cliente sem misturar tenants.
+- Client Portal e métricas básicas suportam revisão e resultados por Client;
+- Agentic Email percorre Segment → estratégia → conteúdo/criativo → broadcast ou sequence → aprovação → envio autorizado → métricas → aprendizado.
 
 ---
 
@@ -1652,19 +1676,21 @@ Só depois de:
 
 1. O top-level será chamado Agency ou Organization no modelo técnico?
 2. A plataforma atenderá apenas agências no MVP ou também marcas diretas?
-3. Client Portal entra no MVP?
-4. Quais roles exatos serão necessárias?
-5. Qual storage de assets será escolhido?
-6. Qual provider de imagem será inicial?
-7. Qual provider de vídeo será inicial?
-8. Qual modelo de atribuição será MVP?
-9. Qual canal de Paid Media será integrado primeiro?
-10. Client Advisor será configurado por Client ou por Product?
-11. Quais Domain Packs estarão disponíveis no piloto?
-12. Como first-party data entrará no Audience Intelligence?
-13. Qual policy de retenção por cliente?
-14. Qual política de autoapproval?
-15. Qual limite de budget change no futuro?
+3. Quais roles exatos serão necessárias?
+4. Qual storage de assets será escolhido?
+5. Qual provider de imagem será inicial?
+6. Qual provider de vídeo será inicial?
+7. Qual modelo de atribuição será MVP?
+8. Qual canal de Paid Media será integrado primeiro?
+9. Client Advisor será configurado por Client ou por Product?
+10. Quais Domain Packs estarão disponíveis no piloto?
+11. Como first-party data entrará no Audience Intelligence?
+12. Qual policy de retenção por cliente?
+13. Qual política de autoapproval?
+14. Qual limite de budget change no futuro?
+15. Resend ou Brevo será o primeiro adapter do OS e qual o recorte inicial de sequences/automations?
+16. Quais critérios de identidade, retenção e qualificação liberam o Lead Qualification Agent futuro?
+17. Qual CRM recebe o primeiro handoff e quais campos de feedback são permitidos?
 
 ---
 

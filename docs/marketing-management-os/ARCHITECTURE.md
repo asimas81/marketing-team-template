@@ -1,253 +1,28 @@
-# AGENCY_MULTI_TENANT_ARCHITECTURE_UPDATE.md
+# ARCHITECTURE — Marketing Management OS
 
-# Marketing Management OS — Atualização Arquitetural para Agência Multi-Tenant
+## Posicionamento e fontes
 
-**Versão:** 1.0  
-**Status:** READY_FOR_ARCHITECTURE_UPDATE
+O produto é uma **Agentic Marketing Operations Platform for Agencies**. O [PRD](./PRD.md) define escopo e critérios de produto. O [Product Update Plan](../harness/MARKETING_OS_PRODUCT_UPDATE_PLAN.md) registra as decisões recentes e sua prioridade; o [Design System](../harness/MARKETING_OS_DESIGN_SYSTEM.md) é a referência canônica de UX/UI; a [Prototype Inspiration](../harness/MARKETING_OS_PROTOTYPE_INSPIRATION.md) é a referência oficial de prototipação, sem copiar concorrentes. Esta página é o mapa funcional canônico; as especificações vinculadas detalham cada domínio. Regras de segurança, contexto, execução, observabilidade e governança ficam em [docs/harness](../harness/README.md).
 
----
-
-# MISSÃO
-
-Atualize a arquitetura existente do Marketing Management OS para refletir o modelo de produto descrito no PRD v2.0:
+## Mapa do produto alvo
 
 ```text
-Agency Tenant
-↓
-Client Workspace
-↓
-Product / Brand
-↓
-Campaign
+Web UI principal: Agency View / Client Workspace View / Client Portal
+  └─ Marketing OS Control Plane: identidade, tenancy, produto, campanha,
+     engagement, entregáveis, aprovação, métricas, aprendizado e auditoria
+      ├─ System of record: dados estruturados + assets privados versionados
+      ├─ Context Gateway → Eve / Marketing Lead → especialistas
+      └─ Client Integrations → Email primeiro; mídia e outros canais por fase
 ```
 
-O produto deve operar como plataforma para agência gerenciar múltiplos clientes com isolamento completo.
+`AgencyTenant → ClientWorkspace → Product/Brand → Campaign` é a hierarquia de ownership. Toda operação de cliente, incluindo Campaign, AgentRun, Engagement, Lead futuro, Artifact, Approval e ExternalAction, resolve escopo e permissão no Control Plane. O OS detém estado de negócio, versões e decisões. Eve executa trabalho cognitivo e retorna propostas/artefatos; provedores externos executam ações autorizadas. Notion é interoperabilidade opcional, nunca system of record. O [Target Architecture](./TARGET_ARCHITECTURE.md), [Domain Model](./DOMAIN_MODEL.md) e [Integration Model](./INTEGRATION_MODEL.md) detalham essas fronteiras.
 
-Não implemente código nesta tarefa.
+## Superfícies e capacidades
 
----
+A Web UI concentra trabalho diário da agência e dos clientes. Agency View agrega somente clientes autorizados; Client Workspace View organiza Requests, Products, Audiences, Campaigns, Content, Creative Studio, Engagement, Experiments, Performance, Approvals e Integrations; Client Portal expõe ações e resultados permitidos. Chat/Marketing Lead aparece como utilidade contextual na tela, não como homepage. A [arquitetura da informação](./AGENCY_UI_INFORMATION_ARCHITECTURE.md) organiza as vistas.
 
-# 1. DOCUMENTOS DE ENTRADA
+O ciclo operacional é `research → plan → create → review → publish/execute → measure → optimize → learn`. [Campaign](./CAMPAIGN_MODEL.md) une objetivo, público, trabalho, entregas e resultados. [Engagement](./ENGAGEMENT_ARCHITECTURE.md) introduz `EMAIL`, `WHATSAPP`, `SMS`, `INSTAGRAM_DM`, `FACEBOOK_MESSENGER` e `WEB_CHAT` como contrato de canal; somente Email é a primeira implementação planejada. [Agentic Email](./AGENTIC_EMAIL_MARKETING_SPEC.md) cobre broadcasts, sequences, segments, templates, experiments, automations, performance e recomendações. [Lead Qualification](./LEAD_QUALIFICATION_MODEL.md) é evolução futura, com handoff para CRM externo; o OS não assume pipeline de vendas.
 
-Leia:
+## Sequência e disponibilidade
 
-- `PRD_MARKETING_MANAGEMENT_OS_AGENCY_MULTI_TENANT.md`;
-- `HARNESS_ENGINEERING_MARKETING_MANAGEMENT_OS.md`;
-- `MARKETING_OS_PRODUCT_DOMAIN_AND_CREATIVE_SPECIALISTS.md`;
-- `MARKETING_OS_AUDIENCE_PAID_MEDIA_ARCHITECTURE_UPDATE.md`;
-- tudo em `docs/marketing-management-os/`.
-
----
-
-# 2. DOCUMENTOS EXISTENTES A ATUALIZAR
-
-Atualize quando existirem:
-
-- `TARGET_ARCHITECTURE.md`;
-- `DOMAIN_MODEL.md`;
-- `AGENT_TOPOLOGY.md`;
-- `PRODUCT_CONTEXT_SPEC.md`;
-- `DOMAIN_PACK_SPEC.md`;
-- `CAMPAIGN_MODEL.md`;
-- `APPROVAL_MODEL.md`;
-- `INTEGRATION_MODEL.md`;
-- `MIGRATION_FROM_NOTION.md`;
-- `ROADMAP.md`;
-- `AUDIENCE_INTELLIGENCE_SPEC.md`;
-- `PAID_MEDIA_ARCHITECTURE.md`;
-- `EXPERIMENTATION_MODEL.md`;
-- `PERFORMANCE_OPTIMIZATION_MODEL.md`;
-- `CHANNEL_CONNECTORS_SPEC.md`;
-- `MARKETING_LEARNING_LOOP.md`.
-
-Não alterar `AS-IS.md` para fingir que o novo modelo já existe. Se necessário, apenas adicionar nota de que representa a arquitetura anterior.
-
----
-
-# 3. NOVOS DOCUMENTOS A CRIAR
-
-Crie:
-
-- `AGENCY_MULTI_TENANCY.md`;
-- `CLIENT_WORKSPACE_MODEL.md`;
-- `CLIENT_ADVISOR_PROFILE_SPEC.md`;
-- `CLIENT_INTEGRATION_MODEL.md`;
-- `TENANT_RBAC_MATRIX.md`;
-- `AGENCY_UI_INFORMATION_ARCHITECTURE.md`;
-- `CLIENT_PORTAL_MODEL.md`;
-- `CLIENT_OFFBOARDING_MODEL.md`.
-
----
-
-# 4. DOMAIN MODEL
-
-Adicionar:
-
-```text
-AgencyTenant
-AgencyMembership
-ClientWorkspace
-ClientWorkspaceMembership
-ClientPolicy
-AdvisorProfile
-ClientIntegration
-ExternalAccount
-```
-
-Relacionar com:
-
-```text
-Product
-ProductContext
-DomainPack
-Campaign
-Artifact
-Approval
-AgentRun
-Audience
-Persona
-Experiment
-Metric
-```
-
----
-
-# 5. CLIENT ADVISOR
-
-Cada Client Workspace pode possuir Advisor Profile.
-
-O Advisor Profile usa o agente genérico `product-domain-specialist`.
-
-Não criar código de agente por cliente.
-
-Permitir futuramente Remote Agent específico.
-
----
-
-# 6. INTEGRATIONS
-
-Meta, Google, TikTok, CRM, Resend, Brevo e Analytics devem ser escopados ao Client Workspace.
-
-Documentar:
-
-- OAuth;
-- token reference;
-- external account mapping;
-- permissions;
-- revocation;
-- health;
-- reauth;
-- audit.
-
----
-
-# 7. WEB UI
-
-Atualizar arquitetura para possuir duas perspectivas:
-
-## Agency View
-- dashboard consolidado;
-- clients;
-- approvals;
-- agent runs;
-- performance;
-- alerts.
-
-## Client Workspace View
-- dashboard;
-- requests;
-- products;
-- audiences;
-- campaigns;
-- content;
-- creatives;
-- experiments;
-- paid media;
-- performance;
-- approvals;
-- agents;
-- integrations;
-- reports.
-
----
-
-# 8. CLIENT PORTAL
-
-Planejar Client Portal com roles:
-
-```text
-Client Admin
-Client Approver
-Client Reviewer
-Client Viewer
-```
-
-O portal não é outro banco/sistema.
-
-É outra surface sobre o mesmo Control Plane.
-
----
-
-# 9. PAID MEDIA
-
-Todas as contas e external IDs devem ter ownership de Client Workspace.
-
-Nenhum campaign external mapping pode existir sem client owner.
-
----
-
-# 10. CROSS-CLIENT ANALYTICS
-
-Agency Dashboard pode agregar clientes autorizados.
-
-Preferir SQL/analytics para agregação.
-
-LLM apenas explica ou interpreta agregados.
-
----
-
-# 11. ROADMAP
-
-Atualizar roadmap para garantir que tenancy e client isolation aconteçam antes de paid media real.
-
-Sequência mínima:
-
-```text
-Agency Tenant
-↓
-Membership / RBAC
-↓
-Client Workspace
-↓
-Client Policy
-↓
-Product Context / Domain
-↓
-Campaign / Artifact / Approval
-↓
-Agent Run
-↓
-Audience / Creative
-↓
-Client Integrations
-↓
-Paid Media
-↓
-Metrics / Performance
-↓
-Optimization
-```
-
----
-
-# 12. CRITÉRIO DE SAÍDA
-
-Ao concluir:
-
-```text
-AGENCY_MULTI_TENANT_ARCHITECTURE_READY = true | false
-```
-
-Liste blockers.
-
-Não implemente código.
+A base multi-tenant, versões, aprovações e UI precede execução externa. Client Portal e métricas entram cedo; Email segue o core e é o primeiro canal de Engagement. WhatsApp, Lead Qualification, demais canais e conectores CRM ficam em roadmap, com gates próprios. Meta/Google/TikTok começam por leitura/planejamento e só depois execução controlada. O [Roadmap](./ROADMAP.md) define dependências. Esta documentação descreve alvo, não disponibilidade no código atual: o repositório ainda contém o app web de chat e o time Eve existente.

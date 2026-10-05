@@ -77,3 +77,19 @@ O `Workspace` legado acima torna-se `ClientWorkspace`; os contratos novos usam `
 | Report/CostRecord/AuditEvent | Relatório é snapshot autorizado; custo aloca Agency/Client/Product/Campaign/Run; auditoria registra ator e escopo |
 
 Supabase Auth identifica o principal; RLS em tabelas expostas e API validam Agency e Client, com testes allow/deny. Chaves externas compostas e checagens de ownership também cobrem Product, Campaign, AgentRun, Approval, Asset e ExternalAccount. Agregados da Agency filtram Client por membership antes de comparar métricas. O [modelo de Client](./CLIENT_WORKSPACE_MODEL.md) detalha ciclo de vida e o [modelo de integrações](./CLIENT_INTEGRATION_MODEL.md) detalha credenciais e contas.
+
+## Extensão 2.1: Engagement e Lead futuro
+
+As entidades abaixo são modelo alvo, não tabelas existentes. Em todo vínculo, `(agency_id, client_workspace_id)` é ownership obrigatório e Product/Campaign/integração devem pertencer ao mesmo Client. O [Engagement Architecture](./ENGAGEMENT_ARCHITECTURE.md) define o processo, [Agentic Email](./AGENTIC_EMAIL_MARKETING_SPEC.md) especializa o canal inicial e [Lead Qualification](./LEAD_QUALIFICATION_MODEL.md) define o futuro recorte individual.
+
+| Entidade | Relação e invariantes |
+| --- | --- |
+| EngagementChannel/ClientChannelBinding | Canal entre `EMAIL`, `WHATSAPP`, `SMS`, `INSTAGRAM_DM`, `FACEBOOK_MESSENGER`, `WEB_CHAT`; binding resolve ClientIntegration, identidade externa e capacidades reais; apenas Email é primeira entrega |
+| EngagementCampaign/Broadcast/Sequence/Step | Campaign e Product do mesmo Client, objetivo, Segment/versão, Artifact/versão, estado e janela; Broadcast é envio único, Sequence ordena etapas condicionais |
+| EngagementTemplate/Experiment | Template versionado de conteúdo; Experiment fixa hipótese, variantes, métrica e janela antes da execução |
+| EngagementEvent/PerformanceSnapshot | Evento observado com provider ID, origem, tempo, deduplicação; snapshot preserva definição, janela, freshness e limitações |
+| Consent/identidade de contato para Email | Primeira fase de Engagement: elegibilidade por Client, canal e finalidade, com prova, opt-out e supressão, mesmo sem Lead completo |
+| Lead/LeadIdentity/LeadSource | Roadmap: Lead individual do Client, identidades por canal e origem vinculada a Campaign; IDs externos não são autoridade |
+| LeadQualification/ConversationThread/Handoff | Roadmap: avaliação versionada e evidenciada, thread por canal e snapshot minimizado reconciliado com CRM |
+
+`AudienceSegment` define população/critério; `Lead` futuro é contato individual. `Consent` já acompanha identidade, canal e finalidade no Email, com histórico para opt-in/opt-out e supressão; o vínculo com LeadIdentity é evolução posterior. `Handoff` é fronteira: o OS preserva evidência de marketing, enquanto opportunity/pipeline/sales/customer lifecycle pertencem ao CRM. O contrato de persistência, cardinalidades e retenção precisa ser fechado nas SPECs futuras antes de migrations.

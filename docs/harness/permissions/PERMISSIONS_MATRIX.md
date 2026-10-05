@@ -10,7 +10,7 @@ O [RBAC de Agency e Client](../../marketing-management-os/TENANT_RBAC_MATRIX.md)
 | Audience Intelligence (futuro) | Pesquisa e dados autorizados | Research, segmento/persona hipotética | Não | Não |
 | Content/Social/SEO | Brief e fontes da tarefa | Artifact de craft | Não | Não |
 | Creative Producer | Brief, fontes, direitos | Creative artifact/variant | Não | Não |
-| Email | Copy aprovada e público autorizado | Draft Resend | Não | Send só via aprovação OS + gate Eve |
+| Email | Copy aprovada e público autorizado | Draft Resend | Não | Atual: send com gate Eve; no OS futuro, aprovação de negócio e executor autorizado com gate Eve adicional quando aplicável |
 | Paid Media Strategist (futuro) | Contexto/métricas/contas permitidos | Plano/draft/targeting/budget proposto | Não | Não |
 | Performance Optimizer (futuro) | Métricas normalizadas | Recommendation tipada | Não | Não |
 | Channel Connector | Conta e payload autorizados | Resultado externo | Não | Apenas ação exata aprovada, idempotente e auditada |

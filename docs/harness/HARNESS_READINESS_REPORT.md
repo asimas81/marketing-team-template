@@ -37,7 +37,7 @@ As SPECs A01/A02 (Agency Tenant, Auth, memberships e RLS) têm escopo e critéri
 
 ## Atualização incremental após Product Update Plan
 
-O [Product Update Plan](../marketing-management-os/MARKETING_OS_PRODUCT_UPDATE_PLAN.md), o [Design System](../marketing-management-os/MARKETING_OS_DESIGN_SYSTEM.md) e a [direção de protótipo](../marketing-management-os/MARKETING_OS_PROTOTYPE_INSPIRATION.md) colocam Engagement na visão de Client, com Agentic Email após o core e demais canais, Lead Qualification e CRM em fases posteriores. O [Engagement Channel Contract](./contracts/ENGAGEMENT_CHANNEL_CONTRACT.md) define ownership por Client, Lead/ChannelIdentity/ConsentRecord/ConversationThread/EngagementEvent, capability por canal e separação `DRAFT/PREPARE/SCHEDULE/SEND/PUBLISH`. Policies de segurança, aprovação, contexto, OTel, tools, testes e ambiente foram atualizadas. A arquitetura anterior permanece válida.
+O [Product Update Plan](./MARKETING_OS_PRODUCT_UPDATE_PLAN.md), o [Design System](./MARKETING_OS_DESIGN_SYSTEM.md) e a [direção de protótipo](./MARKETING_OS_PROTOTYPE_INSPIRATION.md) colocam Client Portal e métricas básicas no MVP, Engagement na visão de Client e Agentic Email após o core, antes de Paid Media real. Os demais canais, Lead Qualification e CRM seguem fases posteriores. O [Engagement Channel Contract](./contracts/ENGAGEMENT_CHANNEL_CONTRACT.md) exige ChannelIdentity/ConsentRecord/SuppressionEntry mínimos para Email, sem depender do Lead model completo; define ownership por Client, capabilities e separação `DRAFT/PREPARE/SCHEDULE/SEND/PUBLISH`. Lead/LeadIdentity, ConversationThread e CRM Handoff são futuros. Policies de segurança, aprovação, contexto, OTel, tools, testes e ambiente permanecem válidas.
 
 ### NEW_BLOCKERS
 
@@ -47,7 +47,7 @@ O [Product Update Plan](../marketing-management-os/MARKETING_OS_PRODUCT_UPDATE_P
 
 ### FUTURE_GATES
 
-1. SPEC de Engagement Channel + Consent/Lead mínimo, com decisão de identidade, retenção e finalidade; protótipo de Engagement/Approval conforme Design System.
+1. SPEC de Engagement Channel + ChannelIdentity/Consent/Suppression mínimos, com decisão de identidade, retenção e finalidade; protótipo de Engagement/Approval conforme Design System. Lead completo é gate futuro separado.
 2. SPEC de Agentic Email e adapter piloto client-scoped, com suite de ausência/revogação de consentimento, duplicate-send prevention, retry e webhook deduplicado antes de SEND real.
 3. Somente depois, SPEC própria para WhatsApp e Lead Qualification; avaliar CRM handoff com campos mínimos e sync idempotente.
 4. SMS, Instagram DM, Facebook Messenger e Web Chat permanecem futuros, cada qual com capability/consent/opt-out/limites validados antes de habilitar.
